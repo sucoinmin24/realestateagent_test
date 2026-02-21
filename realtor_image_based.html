@@ -559,12 +559,12 @@
                 <!-- 네비게이션 -->
                 <div class="navigation">
                     <div class="nav-left">
-                        <button class="btn btn-home btn-nav" onclick="goHome()">🏠 홈</button>
-                        <button class="btn btn-finish btn-nav" onclick="finishEarly()">⏹️ 종료</button>
-                    </div>
-                    <div class="nav-right">
                         <button class="btn btn-secondary btn-nav" onclick="previousQuestion()" id="prevBtn">◀ 이전</button>
                         <button class="btn btn-nav" onclick="nextQuestion()" id="nextBtn">다음 ▶</button>
+                    </div>
+                    <div class="nav-right">
+                        <button class="btn btn-home btn-nav" onclick="goHome()">🏠 홈</button>
+                        <button class="btn btn-finish btn-nav" onclick="finishEarly()">⏹️ 종료</button>
                     </div>
                 </div>
             </div>
@@ -871,16 +871,29 @@
             document.getElementById('yearBadge').textContent = `${question.year}년`;
             
             // 이미지 로드
+            const imgContainer = document.getElementById('questionImage').parentElement;
             const imgElement = document.getElementById('questionImage');
+            
+            // 기존 에러 메시지 제거 (있다면)
+            const existingError = imgContainer.querySelector('.image-error');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            // 이미지 표시 및 에러 핸들러 초기화
+            imgElement.style.display = 'block';
             imgElement.src = question.image;
             imgElement.onerror = function() {
-                imgElement.parentElement.innerHTML = `
-                    <div class="image-error">
-                        <h3>⚠️ 이미지를 찾을 수 없습니다</h3>
-                        <p>파일: ${question.image}</p>
-                        <p style="font-size: 12px; margin-top: 10px;">이미지 파일을 questions/ 폴더에 추가해주세요.</p>
-                    </div>
+                // 이미지 숨기고 에러 메시지 추가
+                imgElement.style.display = 'none';
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'image-error';
+                errorDiv.innerHTML = `
+                    <h3>⚠️ 이미지를 찾을 수 없습니다</h3>
+                    <p>파일: ${question.image}</p>
+                    <p style="font-size: 12px; margin-top: 10px;">이미지 파일을 questions/ 폴더에 추가해주세요.</p>
                 `;
+                imgContainer.appendChild(errorDiv);
             };
             
             // 버튼 상태 초기화
