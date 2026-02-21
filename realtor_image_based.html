@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="공인중개사">
+    <meta name="theme-color" content="#667eea">
+    <title>공인중개사 시험 문제집</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.3);
+            height: 8px;
+            border-radius: 4px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: white;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .start-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .start-screen h2 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .start-screen p {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .select-group {
+            margin: 25px 0;
+            text-align: left;
+        }
+
+        .select-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .select-group select,
+        .select-group input {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        .select-group select:focus,
+        .select-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .select-group input {
+            cursor: text;
+        }
+
+        #questionCountInput {
+            display: none;
+            margin-top: 15px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px 45px;
+            font-size: 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .question-screen {
+            display: none;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .question-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .question-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* 문제 이미지 영역 */
+        .question-image-container {
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .question-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 8px;
+        }
+
+        .question-image.loading {
+            min-height: 400px;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 숫자 버튼 영역 */
+        .number-buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .number-btn {
+            padding: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            border: 3px solid #e0e0e0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .number-btn:hover:not(.disabled) {
+            border-color: #667eea;
+            background: #f8f9ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .number-btn.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+            color: #667eea;
+        }
+
+        .number-btn.correct {
+            border-color: #4caf50;
+            background: #e8f5e9;
+            color: #4caf50;
+        }
+
+        .number-btn.wrong {
+            border-color: #f44336;
+            background: #ffebee;
+            color: #f44336;
+        }
+
+        .number-btn.disabled {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .explanation-box {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f0f8ff;
+            border-radius: 10px;
+            border-left: 4px solid #4caf50;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .explanation-box.show {
+            display: block;
+        }
+
+        .explanation-title {
+            font-weight: bold;
+            color: #4caf50;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .explanation-text {
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+            gap: 10px;
+        }
+
+        .nav-left, .nav-right {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-nav {
+            padding: 14px 26px;
+            font-size: 16px;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+            box-shadow: 0 5px 15px rgba(149, 165, 166, 0.4);
+        }
+
+        .btn-home {
+            background: #3498db;
+        }
+
+        .btn-home:hover {
+            background: #2980b9;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-finish {
+            background: #e74c3c;
+        }
+
+        .btn-finish:hover {
+            background: #c0392b;
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .result-screen {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .score-display {
+            font-size: 72px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 30px 0;
+        }
+
+        .score-label {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .score-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        .score-item {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .score-item-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .score-item-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .wrong-answers {
+            margin-top: 40px;
+            text-align: left;
+        }
+
+        .wrong-answers h3 {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .wrong-answer-item {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .wrong-answer-header {
+            font-weight: bold;
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .wrong-answer-explanation {
+            color: #333;
+            line-height: 1.6;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #ffeaa7;
+        }
+
+        .explanation-label {
+            font-weight: bold;
+            color: #4caf50;
+            margin-bottom: 5px;
+        }
+
+        .image-error {
+            text-align: center;
+            padding: 40px;
+            color: #f44336;
+            background: #ffebee;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+            }
+
+            .container {
+                border-radius: 0;
+                min-height: 100vh;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .score-details {
+                grid-template-columns: 1fr;
+            }
+
+            .score-display {
+                font-size: 48px;
+            }
+
+            .navigation {
+                flex-direction: column;
+            }
+
+            .nav-left, .nav-right {
+                width: 100%;
+            }
+
+            .btn-nav {
+                flex: 1;
+            }
+
+            .number-buttons {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 10px;
+            }
+
+            .number-btn {
+                padding: 15px 10px;
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 공인중개사 시험 문제집</h1>
+            <p id="headerSubtitle">2020-2025년 기출문제</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- 시작 화면 -->
+            <div class="start-screen" id="startScreen">
+                <h2>공인중개사 시험 대비 문제집</h2>
+                <p>
+                    2020-2025년 기출문제를 바탕으로 만들어진 문제집입니다.<br>
+                    원본 문제 이미지와 함께 학습할 수 있습니다.
+                </p>
+
+                <div class="select-group">
+                    <label for="yearSelect">📅 년도 선택:</label>
+                    <select id="yearSelect">
+                        <option value="all">전체 년도</option>
+                        <option value="2025">2025년 (제36회)</option>
+                        <option value="2024">2024년 (제35회)</option>
+                        <option value="2023">2023년 (제34회)</option>
+                        <option value="2022">2022년 (제33회)</option>
+                        <option value="2021">2021년 (제32회)</option>
+                        <option value="2020">2020년 (제31회)</option>
+                        <option value="random">🎲 랜덤 (맞춤형)</option>
+                    </select>
+                </div>
+
+                <div class="select-group" id="questionCountInput">
+                    <label for="questionCount">문항 수 입력:</label>
+                    <input type="number" id="questionCount" min="5" max="200" value="40" placeholder="예: 40">
+                </div>
+
+                <div class="select-group">
+                    <label for="subjectSelect">📚 과목 선택:</label>
+                    <select id="subjectSelect">
+                        <option value="all">전체 과목 (통합)</option>
+                        <option value="intro">부동산학개론</option>
+                        <option value="civil">민법 및 민사특별법</option>
+                        <option value="broker">공인중개사법</option>
+                        <option value="public">부동산공법</option>
+                        <option value="disclosure">부동산공시법 및 세법</option>
+                    </select>
+                </div>
+
+                <button class="btn" onclick="startQuiz()">시험 시작 🚀</button>
+            </div>
+
+            <!-- 문제 화면 -->
+            <div class="question-screen" id="questionScreen">
+                <div class="question-header">
+                    <div class="question-number" id="questionNumber">문제 1/40</div>
+                    <div class="question-stats">
+                        <span>⏱️ <span id="timer">00:00</span></span>
+                        <span id="yearBadge" style="background: #667eea; color: white; padding: 4px 10px; border-radius: 12px; font-size: 13px;"></span>
+                    </div>
+                </div>
+
+                <!-- 문제 이미지 -->
+                <div class="question-image-container">
+                    <img id="questionImage" class="question-image" alt="문제" />
+                </div>
+
+                <!-- 숫자 버튼 (1-5) -->
+                <div class="number-buttons" id="numberButtons">
+                    <button class="number-btn" onclick="selectAnswer(0)">1</button>
+                    <button class="number-btn" onclick="selectAnswer(1)">2</button>
+                    <button class="number-btn" onclick="selectAnswer(2)">3</button>
+                    <button class="number-btn" onclick="selectAnswer(3)">4</button>
+                    <button class="number-btn" onclick="selectAnswer(4)">5</button>
+                </div>
+
+                <!-- 해설 -->
+                <div class="explanation-box" id="explanationBox">
+                    <div class="explanation-title">💡 해설</div>
+                    <div class="explanation-text" id="explanationText"></div>
+                </div>
+
+                <!-- 네비게이션 -->
+                <div class="navigation">
+                    <div class="nav-left">
+                        <button class="btn btn-home btn-nav" onclick="goHome()">🏠 홈</button>
+                        <button class="btn btn-finish btn-nav" onclick="finishEarly()">⏹️ 종료</button>
+                    </div>
+                    <div class="nav-right">
+                        <button class="btn btn-secondary btn-nav" onclick="previousQuestion()" id="prevBtn">◀ 이전</button>
+                        <button class="btn btn-nav" onclick="nextQuestion()" id="nextBtn">다음 ▶</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 결과 화면 -->
+            <div class="result-screen" id="resultScreen">
+                <h2 class="score-label">최종 점수</h2>
+                <div class="score-display" id="finalScore">0점</div>
+
+                <div class="score-details">
+                    <div class="score-item">
+                        <div class="score-item-label">총 문제 수</div>
+                        <div class="score-item-value" id="totalQuestions">0</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-item-label">정답</div>
+                        <div class="score-item-value" style="color: #4caf50;" id="correctAnswers">0</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-item-label">오답</div>
+                        <div class="score-item-value" style="color: #f44336;" id="wrongAnswers">0</div>
+                    </div>
+                </div>
+
+                <div class="wrong-answers" id="wrongAnswersSection">
+                    <h3>📝 틀린 문제 해설</h3>
+                    <div id="wrongAnswersList"></div>
+                </div>
+
+                <button class="btn" onclick="restartQuiz()">다시 시작 🔄</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 년도 선택 시 문항수 입력 필드 표시/숨김
+        document.getElementById('yearSelect').addEventListener('change', function() {
+            const questionCountInput = document.getElementById('questionCountInput');
+            if (this.value === 'random') {
+                questionCountInput.style.display = 'block';
+            } else {
+                questionCountInput.style.display = 'none';
+            }
+        });
+
+        // 문제 데이터베이스 (이미지 기반)
+        // 파일명 규칙: questions/YYYY_C_T_NN.png
+        // YYYY: 년도 (2025)
+        // C: 차수 (1=1차, 2=2차)
+        // T: 교시 (1=1교시, 2=2교시)
+        // NN: 문제번호 (01-40)
+        const questionDatabase = [
+            // 2025년 1차 1교시 - 부동산학개론 (1-40번)
+            { year: 2025, subject: 'intro', image: 'questions/2025_1_1_01.png', correct: 0, explanation: '부동성(fixity)은 토지가 물리적으로 고정되어 있어 이동할 수 없다는 특성을 말합니다.' },
+            { year: 2025, subject: 'intro', image: 'questions/2025_1_1_02.png', correct: 0, explanation: '한국표준산업분류(KSIC)에서 부동산 임대 및 공급업은 부동산관련 서비스업에 해당하지 않습니다.' },
+            { year: 2025, subject: 'intro', image: 'questions/2025_1_1_03.png', correct: 2, explanation: '다중주택은 건축법상 단독주택의 한 종류입니다.' },
+            
+            // 더미 데이터 (실제로는 이미지 추가 후 확장)
+            { year: 2025, subject: 'intro', image: 'questions/2025_1_1_04.png', correct: 4, explanation: '부동산 용어 설명' },
+            { year: 2025, subject: 'intro', image: 'questions/2025_1_1_05.png', correct: 3, explanation: 'STP는 Segmentation, Targeting, Positioning입니다.' },
+            
+            // 2025년 1차 1교시 - 민법 (41-80번)
+            { year: 2025, subject: 'civil', image: 'questions/2025_1_1_41.png', correct: 1, explanation: '민법상 법률행위의 설명입니다.' },
+            { year: 2025, subject: 'civil', image: 'questions/2025_1_1_42.png', correct: 0, explanation: '통정허위표시에 관한 설명입니다.' },
+            
+            // 2025년 2차 1교시 - 공인중개사법 (1-40번)
+            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_01.png', correct: 4, explanation: '공인중개사법 설명' },
+            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_02.png', correct: 1, explanation: '공인중개사 자격증 관련' },
+            
+            // 2025년 2차 1교시 - 부동산공법 (41-80번)
+            { year: 2025, subject: 'public', image: 'questions/2025_2_1_41.png', correct: 2, explanation: '국토계획법 관련' },
+            
+            // 2025년 2차 2교시 - 부동산공시법 및 세법 (1-40번)
+            { year: 2025, subject: 'disclosure', image: 'questions/2025_2_2_01.png', correct: 0, explanation: '공간정보법 설명' },
+        ];
+
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+        let questionAnswered = [];
+        let startTime;
+        let timerInterval;
+
+        function startQuiz() {
+            const selectedYear = document.getElementById('yearSelect').value;
+            const selectedSubject = document.getElementById('subjectSelect').value;
+            const questionCount = parseInt(document.getElementById('questionCount').value) || 40;
+
+            let filteredQuestions = [...questionDatabase];
+            
+            if (selectedYear !== 'all' && selectedYear !== 'random') {
+                filteredQuestions = filteredQuestions.filter(q => q.year == selectedYear);
+            }
+
+            if (selectedSubject !== 'all') {
+                filteredQuestions = filteredQuestions.filter(q => q.subject === selectedSubject);
+            }
+
+            if (selectedYear === 'random') {
+                filteredQuestions.sort(() => Math.random() - 0.5);
+                filteredQuestions = filteredQuestions.slice(0, questionCount);
+            } else {
+                filteredQuestions.sort(() => Math.random() - 0.5);
+            }
+
+            if (filteredQuestions.length === 0) {
+                alert('선택한 조건에 해당하는 문제가 없습니다.');
+                return;
+            }
+
+            currentQuestions = filteredQuestions;
+            currentQuestionIndex = 0;
+            userAnswers = new Array(currentQuestions.length).fill(null);
+            questionAnswered = new Array(currentQuestions.length).fill(false);
+            startTime = Date.now();
+
+            if (selectedYear === 'random') {
+                document.getElementById('headerSubtitle').textContent = `랜덤 모드 (${currentQuestions.length}문제)`;
+            } else if (selectedYear === 'all') {
+                document.getElementById('headerSubtitle').textContent = '2020-2025년 통합';
+            } else {
+                document.getElementById('headerSubtitle').textContent = `${selectedYear}년 기출`;
+            }
+
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('questionScreen').style.display = 'block';
+            
+            startTimer();
+            displayQuestion();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                document.getElementById('timer').textContent = 
+                    `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function displayQuestion() {
+            const question = currentQuestions[currentQuestionIndex];
+            const isAnswered = questionAnswered[currentQuestionIndex];
+            
+            document.getElementById('questionNumber').textContent = 
+                `문제 ${currentQuestionIndex + 1}/${currentQuestions.length}`;
+            
+            document.getElementById('yearBadge').textContent = `${question.year}년`;
+            
+            // 이미지 로드
+            const imgElement = document.getElementById('questionImage');
+            imgElement.src = question.image;
+            imgElement.onerror = function() {
+                imgElement.parentElement.innerHTML = `
+                    <div class="image-error">
+                        <h3>⚠️ 이미지를 찾을 수 없습니다</h3>
+                        <p>파일: ${question.image}</p>
+                        <p style="font-size: 12px; margin-top: 10px;">이미지 파일을 questions/ 폴더에 추가해주세요.</p>
+                    </div>
+                `;
+            };
+            
+            // 버튼 상태 초기화
+            const buttons = document.querySelectorAll('.number-btn');
+            buttons.forEach((btn, index) => {
+                btn.className = 'number-btn';
+                
+                if (isAnswered) {
+                    btn.classList.add('disabled');
+                    if (index === question.correct) {
+                        btn.classList.add('correct');
+                    } else if (index === userAnswers[currentQuestionIndex]) {
+                        btn.classList.add('wrong');
+                    }
+                } else if (userAnswers[currentQuestionIndex] === index) {
+                    btn.classList.add('selected');
+                }
+            });
+
+            // 해설 표시
+            const explanationBox = document.getElementById('explanationBox');
+            const explanationText = document.getElementById('explanationText');
+            
+            if (isAnswered) {
+                explanationText.textContent = question.explanation;
+                explanationBox.classList.add('show');
+            } else {
+                explanationBox.classList.remove('show');
+            }
+
+            // 진행률 업데이트
+            const progress = ((currentQuestionIndex + 1) / currentQuestions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+
+            // 버튼 상태
+            document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
+            document.getElementById('nextBtn').textContent = 
+                currentQuestionIndex === currentQuestions.length - 1 ? '결과 보기 ✓' : '다음 ▶';
+        }
+
+        function selectAnswer(answerIndex) {
+            if (questionAnswered[currentQuestionIndex]) {
+                return;
+            }
+
+            const question = currentQuestions[currentQuestionIndex];
+            userAnswers[currentQuestionIndex] = answerIndex;
+            questionAnswered[currentQuestionIndex] = true;
+
+            // 즉시 정답/오답 표시
+            const buttons = document.querySelectorAll('.number-btn');
+            buttons.forEach((btn, index) => {
+                btn.classList.add('disabled');
+                if (index === question.correct) {
+                    btn.classList.add('correct');
+                } else if (index === answerIndex) {
+                    btn.classList.add('wrong');
+                }
+            });
+
+            // 해설 표시
+            const explanationBox = document.getElementById('explanationBox');
+            const explanationText = document.getElementById('explanationText');
+            explanationText.textContent = question.explanation;
+            explanationBox.classList.add('show');
+        }
+
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                displayQuestion();
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < currentQuestions.length - 1) {
+                currentQuestionIndex++;
+                displayQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function goHome() {
+            if (confirm('정말 홈으로 돌아가시겠습니까?\n현재까지의 진행 상황은 저장되지 않습니다.')) {
+                clearInterval(timerInterval);
+                resetQuiz();
+            }
+        }
+
+        function finishEarly() {
+            if (confirm('시험을 종료하고 결과를 확인하시겠습니까?\n답하지 않은 문제는 오답으로 처리됩니다.')) {
+                for (let i = 0; i < currentQuestions.length; i++) {
+                    if (userAnswers[i] === null) {
+                        userAnswers[i] = -1;
+                    }
+                }
+                showResults();
+            }
+        }
+
+        function showResults() {
+            clearInterval(timerInterval);
+
+            let correctCount = 0;
+            let wrongQuestions = [];
+
+            userAnswers.forEach((answer, index) => {
+                if (answer === currentQuestions[index].correct) {
+                    correctCount++;
+                } else {
+                    wrongQuestions.push({
+                        questionNum: index + 1,
+                        question: currentQuestions[index],
+                        userAnswer: answer
+                    });
+                }
+            });
+
+            const score = Math.round((correctCount / currentQuestions.length) * 100);
+
+            document.getElementById('questionScreen').style.display = 'none';
+            document.getElementById('resultScreen').style.display = 'block';
+
+            document.getElementById('finalScore').textContent = score + '점';
+            document.getElementById('totalQuestions').textContent = currentQuestions.length;
+            document.getElementById('correctAnswers').textContent = correctCount;
+            document.getElementById('wrongAnswers').textContent = wrongQuestions.length;
+
+            const wrongAnswersList = document.getElementById('wrongAnswersList');
+            wrongAnswersList.innerHTML = '';
+
+            if (wrongQuestions.length === 0) {
+                wrongAnswersList.innerHTML = '<p style="text-align: center; color: #4caf50; font-size: 18px; padding: 40px;">🎉 모든 문제를 맞혔습니다! 완벽합니다!</p>';
+            } else {
+                wrongQuestions.forEach(wrong => {
+                    const wrongDiv = document.createElement('div');
+                    wrongDiv.className = 'wrong-answer-item';
+                    
+                    const userAnswerText = wrong.userAnswer !== null && wrong.userAnswer !== -1
+                        ? `${wrong.userAnswer + 1}번` 
+                        : '(답안 미선택)';
+                    
+                    wrongDiv.innerHTML = `
+                        <div class="wrong-answer-header">
+                            [${wrong.question.year}년] 문제 ${wrong.questionNum}
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <div style="color: #f44336; margin-bottom: 5px;">
+                                ❌ 선택한 답: ${userAnswerText}
+                            </div>
+                            <div style="color: #4caf50; margin-bottom: 5px;">
+                                ✅ 정답: ${wrong.question.correct + 1}번
+                            </div>
+                        </div>
+                        <div class="wrong-answer-explanation">
+                            <div class="explanation-label">💡 해설:</div>
+                            ${wrong.question.explanation}
+                        </div>
+                    `;
+                    wrongAnswersList.appendChild(wrongDiv);
+                });
+            }
+        }
+
+        function resetQuiz() {
+            currentQuestionIndex = 0;
+            userAnswers = [];
+            questionAnswered = [];
+            document.getElementById('questionScreen').style.display = 'none';
+            document.getElementById('resultScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
+            document.getElementById('progressFill').style.width = '0%';
+            document.getElementById('headerSubtitle').textContent = '2020-2025년 기출문제';
+        }
+
+        function restartQuiz() {
+            resetQuiz();
+        }
+    </script>
+</body>
+</html>
