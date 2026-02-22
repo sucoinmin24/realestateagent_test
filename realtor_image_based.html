@@ -1160,5 +1160,22 @@
             resetQuiz();
         }
     </script>
+    <script>
+        // Service Worker 등록
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js').then((reg) => {
+                // 업데이트 확인
+                reg.addEventListener('updatefound', () => {
+                    const newWorker = reg.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'activated') {
+                            // 새 버전 감지 시 자동 새로고침
+                            window.location.reload();
+                        }
+                    });
+                });
+            });
+        }
+    </script>
 </body>
 </html>

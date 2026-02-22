@@ -1,0 +1,21 @@
+{
+  "name": "공인중개사 시험 문제집",
+  "short_name": "공인중개사",
+  "start_url": "./realtor_image_based.html",
+  "display": "standalone",
+  "background_color": "#667eea",
+  "theme_color": "#667eea",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
