@@ -1103,6 +1103,7 @@ ${ocrText}
 - 문제 내용을 그대로 반복하지 말기
 - 모든 단어는 한국어로만 작성
 - 반말로 짧고 간결하게
+- 긴문장이 아닌 글머리 기호 목록을 활용해서 간결하게
 - 해설은 무조건 신뢰도 높은 내용 기반으로만
 
 해설:`;
@@ -1152,7 +1153,48 @@ ${ocrText}
             return data.candidates[0].content.parts[0].text.trim();
         }
 
-        // Groq 호출
+        // Groq Vision 호출 (이미지 직접 전송)
+        async function callGroqVision(base64, correctNum) {
+            const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${AI_KEYS.groq}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+                    messages: [{
+                        role: 'user',
+                        content: [
+                            {
+                                type: 'image_url',
+                                image_url: { url: `data:image/jpeg;base64,${base64}` }
+                            },
+                            {
+                                type: 'text',
+                                text: `이 공인중개사 시험 문제를 보고 해설을 작성해줘. 정답은 ${correctNum}번이야.
+
+다음 규칙대로 해설을 작성해:
+- 왜 정답이 그것인지, 주요 오답은 왜 틀린지 설명
+- 문제 내용을 그대로 반복하지 말기
+- 모든 단어는 한국어로만 작성
+- 반말로 짧고 간결하게
+- 긴문장이 아닌 글머리 기호 목록을 활용해서 간결하게
+- 해설은 무조건 신뢰도 높은 내용 기반으로만
+
+해설:`
+                            }
+                        ]
+                    }],
+                    max_tokens: 400
+                })
+            });
+            if (!res.ok) throw new Error(`Groq Vision ${res.status}`);
+            const data = await res.json();
+            return data.choices[0].message.content.trim();
+        }
+
+        // Groq 텍스트 호출 (OCR 텍스트 기반)
         async function callGroq(prompt) {
             const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                 method: 'POST',
@@ -1235,7 +1277,21 @@ ${ocrText}
                 console.warn('❌ Gemini Vision 실패:', e.message);
             }
 
-            // OCR 추출 (2~4차에서 공통 사용)
+            // 2차: Groq Vision (이미지 → 해설 한번에)
+            try {
+                console.log('2차: Groq Vision 시도...');
+                const result = await callGroqVision(base64, correctNum);
+                if (result && result.length > 10) {
+                    console.log('✅ Groq Vision 성공');
+                    explanationCache[cacheKey] = result;
+                    question.explanation = result;
+                    return result;
+                }
+            } catch (e) {
+                console.warn('❌ Groq Vision 실패:', e.message);
+            }
+
+            // 3차 이후: OCR 추출 → 텍스트 기반 모델들
             try {
                 console.log('OCR 추출 시도...');
                 ocrText = await geminiOCR(base64);
@@ -1245,72 +1301,51 @@ ${ocrText}
                 ocrText = null;
             }
 
-            // OCR 성공 시 텍스트 기반 프롬프트, 실패 시 파일명 기반 프롬프트
-            let prompt;
+            // OCR 성공 시만 텍스트 기반 폴백 진행
             if (ocrText && ocrText.length >= 20) {
-                prompt = buildPrompt(ocrText, correctNum);
-            } else {
-                // 파일명에서 정보 추출 (예: 2025_1_1_03.png → 2025년 1차 1교시 3번)
-                const match = question.image.match(/(\d{4})_(\d+)_(\d+)_(\d+)/);
-                if (match) {
-                    const [, yr, round, session, num] = match;
-                    const subjectName = question.subject === 'intro' ? '부동산학개론' : '민법 및 민사특별법';
-                    prompt = `공인중개사 시험 ${yr}년 ${round}차 ${session}교시 ${parseInt(num)}번 문제야. 과목은 ${subjectName}이고 정답은 ${correctNum}번이야.
+                const prompt = buildPrompt(ocrText, correctNum);
 
-다음 규칙대로 해설을 작성해:
-- 왜 정답이 그것인지, 주요 오답은 왜 틀린지 설명
-- 문제 내용을 그대로 반복하지 말기
-- 모든 단어는 한국어로만 작성
-- 반말로 짧고 간결하게
-- 해설은 무조건 신뢰도 높은 내용 기반으로만
-
-해설:`;
-                } else {
-                    prompt = `공인중개사 시험 문제이고 정답은 ${correctNum}번이야. 이 문제에 대해 200자 이내로 간결하게 해설해줘. 한국어 반말로.`;
+                // 4차: Gemini 텍스트
+                try {
+                    console.log('4차: Gemini Text 시도...');
+                    const result = await callGeminiText(prompt);
+                    if (result && result.length > 10) {
+                        console.log('✅ Gemini Text 성공');
+                        explanationCache[cacheKey] = result;
+                        question.explanation = result;
+                        return result;
+                    }
+                } catch (e) {
+                    console.warn('❌ Gemini Text 실패:', e.message);
                 }
-                console.log('OCR 실패 → 파일명 기반 프롬프트 사용');
-            }
 
-            // 2차: Gemini 텍스트
-            try {
-                console.log('2차: Gemini Text 시도...');
-                const result = await callGeminiText(prompt);
-                if (result && result.length > 10) {
-                    console.log('✅ Gemini Text 성공');
-                    explanationCache[cacheKey] = result;
-                    question.explanation = result;
-                    return result;
+                // 5차: Groq 텍스트
+                try {
+                    console.log('5차: Groq Text 시도...');
+                    const result = await callGroq(prompt);
+                    if (result && result.length > 10) {
+                        console.log('✅ Groq Text 성공');
+                        explanationCache[cacheKey] = result;
+                        question.explanation = result;
+                        return result;
+                    }
+                } catch (e) {
+                    console.warn('❌ Groq Text 실패:', e.message);
                 }
-            } catch (e) {
-                console.warn('❌ Gemini Text 실패:', e.message);
-            }
 
-            // 3차: Groq
-            try {
-                console.log('3차: Groq 시도...');
-                const result = await callGroq(prompt);
-                if (result && result.length > 10) {
-                    console.log('✅ Groq 성공');
-                    explanationCache[cacheKey] = result;
-                    question.explanation = result;
-                    return result;
+                // 6차: OpenRouter
+                try {
+                    console.log('6차: OpenRouter 시도...');
+                    const result = await callOpenRouter(prompt);
+                    if (result && result.length > 10) {
+                        console.log('✅ OpenRouter 성공');
+                        explanationCache[cacheKey] = result;
+                        question.explanation = result;
+                        return result;
+                    }
+                } catch (e) {
+                    console.warn('❌ OpenRouter 실패:', e.message);
                 }
-            } catch (e) {
-                console.warn('❌ Groq 실패:', e.message);
-            }
-
-            // 4차: OpenRouter
-            try {
-                console.log('4차: OpenRouter 시도...');
-                const result = await callOpenRouter(prompt);
-                if (result && result.length > 10) {
-                    console.log('✅ OpenRouter 성공');
-                    explanationCache[cacheKey] = result;
-                    question.explanation = result;
-                    return result;
-                }
-            } catch (e) {
-                console.warn('❌ OpenRouter 실패:', e.message);
             }
 
             throw new Error('모든 모델 실패');
