@@ -325,6 +325,73 @@
             opacity: 0.7;
         }
 
+        .chat-history {
+            margin-top: 12px;
+        }
+
+        .chat-bubble {
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin-top: 8px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .chat-bubble.user {
+            background: #667eea;
+            color: white;
+            margin-left: 40px;
+            text-align: right;
+        }
+
+        .chat-bubble.ai {
+            background: #e8f5e9;
+            color: #333;
+            margin-right: 40px;
+        }
+
+        .followup-box {
+            margin-top: 12px;
+        }
+
+        .followup-input-wrap {
+            display: flex;
+            gap: 8px;
+        }
+
+        .followup-input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 2px solid #ddd;
+            border-radius: 20px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .followup-input:focus {
+            border-color: #667eea;
+        }
+
+        .followup-btn {
+            padding: 10px 18px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .followup-btn:active {
+            opacity: 0.7;
+        }
+
+        .followup-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .navigation {
             display: flex;
             justify-content: space-between;
@@ -594,6 +661,13 @@
                 <div class="explanation-box" id="explanationBox">
                     <div class="explanation-title">💡 해설</div>
                     <div class="explanation-text" id="explanationText"></div>
+                    <div class="chat-history" id="chatHistory"></div>
+                    <div class="followup-box" id="followupBox" style="display:none;">
+                        <div class="followup-input-wrap">
+                            <input type="text" id="followupInput" class="followup-input" placeholder="추가 질문을 입력하세요..." />
+                            <button class="followup-btn" onclick="sendFollowup()">전송</button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 네비게이션 -->
@@ -1045,8 +1119,29 @@
                 const cached = explanationCache[question.image] || question.explanation;
                 explanationText.textContent = cached;
                 explanationBox.classList.add('show');
+
+                // 채팅 히스토리 복원
+                const chatHistoryEl = document.getElementById('chatHistory');
+                chatHistoryEl.innerHTML = '';
+                const history = chatHistories[question.image];
+                if (history && history.length > 1) {
+                    // 첫번째는 해설(이미 표시됨), 나머지만 복원
+                    for (let i = 1; i < history.length; i++) {
+                        const bubble = document.createElement('div');
+                        bubble.className = 'chat-bubble ' + (history[i].role === 'user' ? 'user' : 'ai');
+                        bubble.textContent = history[i].content;
+                        chatHistoryEl.appendChild(bubble);
+                    }
+                }
+
+                // followup UI
+                if (usedModels[question.image]) {
+                    showFollowupUI();
+                }
             } else {
                 explanationBox.classList.remove('show');
+                document.getElementById('chatHistory').innerHTML = '';
+                document.getElementById('followupBox').style.display = 'none';
             }
 
             // 진행률 업데이트
@@ -1061,12 +1156,17 @@
 
         // ====== AI 해설 시스템 ======
         const AI_KEYS = {
-            gemini: 'AIzaSyA0UGfqMWEtZVqdegrwNYSy-LbDTmNLLqA',
+            gemini: 'AIzaSyCaA5PAyY5v2KfM_O8T1VkbM3lriJIOAWA',
             groq: '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',
             openrouter: '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'
         };
 
         const explanationCache = {};
+
+        // 대화 히스토리 (문제별)
+        const chatHistories = {};
+        // 해설 생성에 성공한 모델 (문제별)
+        const usedModels = {};
 
         // 이미지 → base64
         function imageToBase64(imgEl) {
@@ -1098,13 +1198,11 @@ ${ocrText}
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${AI_KEYS.gemini}`;
             const prompt = `이 공인중개사 시험 문제 이미지를 보고 해설을 작성해줘. 정답은 ${correctNum}번이야.
 
-다음 규칙대로 해설을 작성해:
-- 왜 정답이 그것인지, 주요 오답은 왜 틀린지 설명
-- 문제 내용을 그대로 반복하지 말기
-- 모든 단어는 한국어로만 작성
-- 반말로 짧고 간결하게
-- 긴문장이 아닌 글머리 기호 목록을 활용해서 간결하게
-- 해설은 무조건 신뢰도 높은 내용 기반으로만
+규칙:
+- 200자 이내, 반말, 간결하게
+- 왜 정답이 그것인지, 주요 오답은 왜 틀린지
+- 문제 내용 반복 금지
+- 한국어로만 작성
 
 해설:`;
 
@@ -1174,13 +1272,11 @@ ${ocrText}
                                 type: 'text',
                                 text: `이 공인중개사 시험 문제를 보고 해설을 작성해줘. 정답은 ${correctNum}번이야.
 
-다음 규칙대로 해설을 작성해:
-- 왜 정답이 그것인지, 주요 오답은 왜 틀린지 설명
-- 문제 내용을 그대로 반복하지 말기
-- 모든 단어는 한국어로만 작성
-- 반말로 짧고 간결하게
-- 긴문장이 아닌 글머리 기호 목록을 활용해서 간결하게
-- 해설은 무조건 신뢰도 높은 내용 기반으로만
+규칙:
+- 200자 이내, 반말, 간결하게
+- 왜 정답이 그것인지, 주요 오답은 왜 틀린지
+- 문제 내용 반복 금지
+- 한국어로만 작성
 
 해설:`
                             }
@@ -1263,35 +1359,40 @@ ${ocrText}
             const correctNum = question.correct + 1;
             let ocrText = null;
 
-            // 1차: Gemini Vision (이미지 → 해설 한번에)
+            // 성공 시 공통 처리
+            function onSuccess(result, modelName) {
+                console.log(`✅ ${modelName} 성공`);
+                usedModels[cacheKey] = modelName;
+                chatHistories[cacheKey] = [{ role: 'assistant', content: result }];
+                explanationCache[cacheKey] = result;
+                question.explanation = result;
+            }
+
+            // 1차: Gemini Vision
             try {
                 console.log('1차: Gemini Vision 시도...');
                 const result = await tryGeminiVision(base64, correctNum);
                 if (result && result.length > 10) {
-                    console.log('✅ Gemini Vision 성공');
-                    explanationCache[cacheKey] = result;
-                    question.explanation = result;
+                    onSuccess(result, 'geminiVision');
                     return result;
                 }
             } catch (e) {
                 console.warn('❌ Gemini Vision 실패:', e.message);
             }
 
-            // 2차: Groq Vision (이미지 → 해설 한번에)
+            // 2차: Groq Vision
             try {
                 console.log('2차: Groq Vision 시도...');
                 const result = await callGroqVision(base64, correctNum);
                 if (result && result.length > 10) {
-                    console.log('✅ Groq Vision 성공');
-                    explanationCache[cacheKey] = result;
-                    question.explanation = result;
+                    onSuccess(result, 'groqVision');
                     return result;
                 }
             } catch (e) {
                 console.warn('❌ Groq Vision 실패:', e.message);
             }
 
-            // 3차 이후: OCR 추출 → 텍스트 기반 모델들
+            // 3차: OCR 추출 → 텍스트 기반 모델들
             try {
                 console.log('OCR 추출 시도...');
                 ocrText = await geminiOCR(base64);
@@ -1301,7 +1402,6 @@ ${ocrText}
                 ocrText = null;
             }
 
-            // OCR 성공 시만 텍스트 기반 폴백 진행
             if (ocrText && ocrText.length >= 20) {
                 const prompt = buildPrompt(ocrText, correctNum);
 
@@ -1310,9 +1410,7 @@ ${ocrText}
                     console.log('4차: Gemini Text 시도...');
                     const result = await callGeminiText(prompt);
                     if (result && result.length > 10) {
-                        console.log('✅ Gemini Text 성공');
-                        explanationCache[cacheKey] = result;
-                        question.explanation = result;
+                        onSuccess(result, 'geminiText');
                         return result;
                     }
                 } catch (e) {
@@ -1324,9 +1422,7 @@ ${ocrText}
                     console.log('5차: Groq Text 시도...');
                     const result = await callGroq(prompt);
                     if (result && result.length > 10) {
-                        console.log('✅ Groq Text 성공');
-                        explanationCache[cacheKey] = result;
-                        question.explanation = result;
+                        onSuccess(result, 'groqText');
                         return result;
                     }
                 } catch (e) {
@@ -1338,9 +1434,7 @@ ${ocrText}
                     console.log('6차: OpenRouter 시도...');
                     const result = await callOpenRouter(prompt);
                     if (result && result.length > 10) {
-                        console.log('✅ OpenRouter 성공');
-                        explanationCache[cacheKey] = result;
-                        question.explanation = result;
+                        onSuccess(result, 'openrouter');
                         return result;
                     }
                 } catch (e) {
@@ -1351,6 +1445,153 @@ ${ocrText}
             throw new Error('모든 모델 실패');
         }
 
+        // 추가 질문 전송
+        async function sendFollowup() {
+            const input = document.getElementById('followupInput');
+            const userMsg = input.value.trim();
+            if (!userMsg) return;
+
+            const question = currentQuestions[currentQuestionIndex];
+            const cacheKey = question.image;
+            const modelName = usedModels[cacheKey];
+            if (!modelName) return;
+
+            // 사용자 메시지 표시
+            const chatHistory = document.getElementById('chatHistory');
+            const userBubble = document.createElement('div');
+            userBubble.className = 'chat-bubble user';
+            userBubble.textContent = userMsg;
+            chatHistory.appendChild(userBubble);
+
+            // 입력 초기화 & 비활성화
+            input.value = '';
+            input.disabled = true;
+            document.querySelector('.followup-btn').disabled = true;
+
+            // 로딩 표시
+            const loadingBubble = document.createElement('div');
+            loadingBubble.className = 'chat-bubble ai';
+            loadingBubble.innerHTML = '<div class="explanation-loading"><div class="spinner"></div>답변 생성 중...</div>';
+            chatHistory.appendChild(loadingBubble);
+
+            // 히스토리에 추가
+            if (!chatHistories[cacheKey]) chatHistories[cacheKey] = [];
+            chatHistories[cacheKey].push({ role: 'user', content: userMsg });
+
+            try {
+                let aiReply;
+                const history = chatHistories[cacheKey];
+                const base64 = imageToBase64(document.getElementById('questionImage'));
+
+                if (modelName === 'geminiVision' || modelName === 'geminiText') {
+                    // Gemini: 대화 히스토리 포함 호출
+                    const contents = [];
+                    // 첫 메시지에 이미지 포함
+                    contents.push({
+                        role: 'user',
+                        parts: [
+                            { inlineData: { mimeType: 'image/jpeg', data: base64 } },
+                            { text: '이 공인중개사 시험 문제에 대해 질문할게.' }
+                        ]
+                    });
+                    history.forEach(msg => {
+                        contents.push({
+                            role: msg.role === 'assistant' ? 'model' : 'user',
+                            parts: [{ text: msg.content }]
+                        });
+                    });
+
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${AI_KEYS.gemini}`;
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents, generationConfig: { maxOutputTokens: 500 } })
+                    });
+                    if (!res.ok) throw new Error(`Gemini ${res.status}`);
+                    const data = await res.json();
+                    aiReply = data.candidates[0].content.parts[0].text.trim();
+
+                } else if (modelName === 'groqVision' || modelName === 'groqText') {
+                    // Groq: 대화 히스토리 포함 호출
+                    const messages = [];
+                    // 첫 메시지에 이미지 포함
+                    messages.push({
+                        role: 'user',
+                        content: [
+                            { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${base64}` } },
+                            { type: 'text', text: '이 공인중개사 시험 문제에 대해 질문할게.' }
+                        ]
+                    });
+                    history.forEach(msg => {
+                        messages.push({ role: msg.role, content: msg.content });
+                    });
+
+                    const model = modelName === 'groqVision' ? 'meta-llama/llama-4-scout-17b-16e-instruct' : 'llama-3.1-8b-instant';
+                    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${AI_KEYS.groq}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ model, messages, max_tokens: 500 })
+                    });
+                    if (!res.ok) throw new Error(`Groq ${res.status}`);
+                    const data = await res.json();
+                    aiReply = data.choices[0].message.content.trim();
+
+                } else {
+                    // OpenRouter
+                    const messages = [];
+                    history.forEach(msg => {
+                        messages.push({ role: msg.role, content: msg.content });
+                    });
+
+                    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${AI_KEYS.openrouter}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: 'mistralai/mixtral-8x7b-instruct',
+                            messages,
+                            max_tokens: 500
+                        })
+                    });
+                    if (!res.ok) throw new Error(`OpenRouter ${res.status}`);
+                    const data = await res.json();
+                    aiReply = data.choices[0].message.content.trim();
+                }
+
+                // 응답 표시
+                loadingBubble.innerHTML = '';
+                loadingBubble.textContent = aiReply;
+                chatHistories[cacheKey].push({ role: 'assistant', content: aiReply });
+
+            } catch (e) {
+                console.error('추가 질문 실패:', e);
+                loadingBubble.innerHTML = '<span style="color:#f44336;">답변 생성에 실패했습니다.</span>';
+            }
+
+            // 입력 다시 활성화
+            input.disabled = false;
+            document.querySelector('.followup-btn').disabled = false;
+            input.focus();
+
+            // 스크롤
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        // 추가 질문 UI 표시
+        function showFollowupUI() {
+            document.getElementById('followupBox').style.display = 'block';
+            // Enter 키로 전송
+            const input = document.getElementById('followupInput');
+            input.onkeydown = (e) => {
+                if (e.key === 'Enter') sendFollowup();
+            };
+        }
+
         // retry 핸들러
         function retryExplanation() {
             const question = currentQuestions[currentQuestionIndex];
@@ -1359,6 +1600,7 @@ ${ocrText}
 
             getAIExplanation(question).then((text) => {
                 explanationText.textContent = text;
+                showFollowupUI();
             }).catch((err) => {
                 console.error('AI 해설 재시도 실패:', err);
                 explanationText.innerHTML = '<span style="color:#f44336;">해설을 불러오지 못했습니다.</span><br><button class="retry-btn" onclick="retryExplanation()">🔄 다시 시도</button>';
@@ -1393,11 +1635,13 @@ ${ocrText}
             // 기존 해설이 있으면 바로 표시, 없으면 AI 생성
             if (question.explanation && question.explanation.trim() !== '') {
                 explanationText.textContent = question.explanation;
+                showFollowupUI();
             } else {
                 explanationText.innerHTML = '<div class="explanation-loading"><div class="spinner"></div>AI 해설 생성 중...</div>';
 
                 getAIExplanation(question).then((text) => {
                     explanationText.textContent = text;
+                    showFollowupUI();
                 }).catch((err) => {
                     console.error('AI 해설 실패:', err);
                     explanationText.innerHTML = '<span style="color:#f44336;">해설을 불러오지 못했습니다.</span><br><button class="retry-btn" onclick="retryExplanation()">🔄 다시 시도</button>';
