@@ -666,6 +666,7 @@
                     <div class="question-stats">
                         <span>⏱️ <span id="timer">00:00</span></span>
                         <span id="yearBadge" style="background: #667eea; color: white; padding: 4px 10px; border-radius: 12px; font-size: 13px;"></span>
+                        <span id="subjectBadge" style="background: #4caf50; color: white; padding: 4px 10px; border-radius: 12px; font-size: 13px;"></span>
                     </div>
                 </div>
 
@@ -1171,6 +1172,15 @@
             
             document.getElementById('yearBadge').textContent = `${question.year}년`;
             
+            const subjectNames = {
+                intro: '부동산학개론',
+                civil: '민법 및 민사특별법',
+                broker: '공인중개사법',
+                public: '부동산공법',
+                disclosure: '부동산공시법 및 세법'
+            };
+            document.getElementById('subjectBadge').textContent = subjectNames[question.subject] || question.subject;                       
+
             // 이미지 로드
             const imgContainer = document.getElementById('questionImage').parentElement;
             const imgElement = document.getElementById('questionImage');
