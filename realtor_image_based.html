@@ -292,6 +292,7 @@
             align-items: center;
             gap: 10px;
             color: #888;
+            font-size: 14px;
         }
 
         .explanation-loading .spinner {
@@ -301,15 +302,27 @@
             border-top: 2px solid #667eea;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
+            flex-shrink: 0;
         }
 
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
 
-        .explanation-error {
-            color: #f44336;
+        .retry-btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 18px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 20px;
             font-size: 13px;
+            cursor: pointer;
+        }
+
+        .retry-btn:active {
+            opacity: 0.7;
         }
 
         .navigation {
@@ -645,11 +658,11 @@
         // NN: 문제번호 (01-40)
         const questionDatabase = [
             // 2025년 1차 1교시 - 부동산학개론 (1-40번)
-            { year: 2025, subject: 'intro', image: 'questions/2025_1_1_01.png', correct: 0, explanation: ''},
-            { year: 2025, subject: 'intro', image: 'questions/2025_1_1_02.png', correct: 0, explanation: ''},
-            { year: 2025, subject: 'intro', image: 'questions/2025_1_1_03.png', correct: 2, explanation: ''},
+            { year: 2025, subject: 'intro', image: 'questions/2025_1_1_01.png', correct: 0, explanation: '부동성(fixity)은 토지가 물리적으로 고정되어 있어 이동할 수 없다는 특성을 말합니다.' },
+            { year: 2025, subject: 'intro', image: 'questions/2025_1_1_02.png', correct: 0, explanation: '한국표준산업분류(KSIC)에서 부동산 임대 및 공급업은 부동산관련 서비스업에 해당하지 않습니다.' },
+            { year: 2025, subject: 'intro', image: 'questions/2025_1_1_03.png', correct: 2, explanation: '다중주택은 건축법상 단독주택의 한 종류입니다.' },
             { year: 2025, subject: 'intro', image: 'questions/2025_1_1_04.png', correct: 2, explanation: ''},
-            { year: 2025, subject: 'intro', image: 'questions/2025_1_1_05.png', correct: 3, explanation: ''},
+            { year: 2025, subject: 'intro', image: 'questions/2025_1_1_05.png', correct: 3, explanation: 'STP는 Segmentation, Targeting, Positioning입니다.'},
             { year: 2025, subject: 'intro', image: 'questions/2025_1_1_06.png', correct: 2, explanation: ''},
             { year: 2025, subject: 'intro', image: 'questions/2025_1_1_07.png', correct: 4, explanation: ''},
             { year: 2025, subject: 'intro', image: 'questions/2025_1_1_08.png', correct: 0, explanation: ''},
@@ -729,14 +742,14 @@
             { year: 2025, subject: 'civil', image: 'questions/2025_1_1_80.png', correct: 2, explanation: ''},
             
             // 2025년 2차 1교시 - 공인중개사법 (1-40번)
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_01.png', correct: 4, explanation: '' },
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_02.png', correct: 1, explanation: '' },
+            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_01.png', correct: 4, explanation: '공인중개사법 설명' },
+            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_02.png', correct: 1, explanation: '공인중개사 자격증 관련' },
             
             // 2025년 2차 1교시 - 부동산공법 (41-80번)
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_41.png', correct: 2, explanation: '' },
+            { year: 2025, subject: 'public', image: 'questions/2025_2_1_41.png', correct: 2, explanation: '국토계획법 관련' },
             
             // 2025년 2차 2교시 - 부동산공시법 및 세법 (1-40번)
-            { year: 2025, subject: 'disclosure', image: 'questions/2025_2_2_01.png', correct: 0, explanation: '' },
+            { year: 2025, subject: 'disclosure', image: 'questions/2025_2_2_01.png', correct: 0, explanation: '공간정보법 설명' },
 
             // 2024년 1차 1교시 - 부동산학개론 (1-40번)
             { year: 2024, subject: 'intro', image: 'questions/2024_1_1_01.png', correct: 3, explanation: ''},
@@ -837,7 +850,7 @@
             { year: 2023, subject: 'intro', image: 'questions/2023_1_1_12.png', correct: 2, explanation: ''},
             { year: 2023, subject: 'intro', image: 'questions/2023_1_1_13.png', correct: 1, explanation: ''},
             { year: 2023, subject: 'intro', image: 'questions/2023_1_1_14.png', correct: 2, explanation: ''},
-            { year: 2023, subject: 'intro', image: 'questions/2023_1_1_15.png', correct: 0, explanation: ''},
+            { year: 2023, subject: 'intro', image: 'questions/2023_1_1_15.png', correct: 0, explanation: '1,2,3,4,5번 모두 정답'},
             { year: 2023, subject: 'intro', image: 'questions/2023_1_1_16.png', correct: 1, explanation: ''},
             { year: 2023, subject: 'intro', image: 'questions/2023_1_1_17.png', correct: 3, explanation: ''},
             { year: 2023, subject: 'intro', image: 'questions/2023_1_1_18.png', correct: 2, explanation: ''},
@@ -849,7 +862,7 @@
             { year: 2023, subject: 'intro', image: 'questions/2023_1_1_24.png', correct: 0, explanation: ''},
             { year: 2023, subject: 'intro', image: 'questions/2023_1_1_25.png', correct: 2, explanation: ''},
             { year: 2023, subject: 'intro', image: 'questions/2023_1_1_26.png', correct: 0, explanation: ''},
-            { year: 2023, subject: 'intro', image: 'questions/2023_1_1_27.png', correct: 0, explanation: ''},
+            { year: 2023, subject: 'intro', image: 'questions/2023_1_1_27.png', correct: 0, explanation: '1,2,3,4,5번 모두 정답'},
             { year: 2023, subject: 'intro', image: 'questions/2023_1_1_28.png', correct: 0, explanation: ''},
             { year: 2023, subject: 'intro', image: 'questions/2023_1_1_29.png', correct: 3, explanation: ''},
             { year: 2023, subject: 'intro', image: 'questions/2023_1_1_30.png', correct: 4, explanation: ''},
@@ -1029,8 +1042,8 @@
             const explanationText = document.getElementById('explanationText');
             
             if (isAnswered) {
-                const cachedExplanation = explanationCache[question.image] || question.explanation;
-                explanationText.textContent = cachedExplanation;
+                const cached = explanationCache[question.image] || question.explanation;
+                explanationText.textContent = cached;
                 explanationBox.classList.add('show');
             } else {
                 explanationBox.classList.remove('show');
@@ -1046,54 +1059,44 @@
                 currentQuestionIndex === currentQuestions.length - 1 ? '결과 보기 ✓' : '다음 ▶';
         }
 
-        // ====== AI 해설 생성 (멀티 모델 폴백 + OCR) ======
+        // ====== AI 해설 시스템 ======
         const AI_KEYS = {
             gemini: 'AIzaSyCaA5PAyY5v2KfM_O8T1VkbM3lriJIOAWA',
             groq: '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',
             openrouter: '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'
         };
 
-        // 해설 캐시 (세션 중 중복 호출 방지)
         const explanationCache = {};
 
-        // 이미지 → base64 변환
-        async function imageToBase64(imgElement) {
-            return new Promise((resolve) => {
-                const canvas = document.createElement('canvas');
-                canvas.width = imgElement.naturalWidth;
-                canvas.height = imgElement.naturalHeight;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(imgElement, 0, 0);
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                resolve(dataUrl.split(',')[1]);
-            });
+        // 이미지 → base64
+        function imageToBase64(imgEl) {
+            const canvas = document.createElement('canvas');
+            canvas.width = imgEl.naturalWidth;
+            canvas.height = imgEl.naturalHeight;
+            canvas.getContext('2d').drawImage(imgEl, 0, 0);
+            return canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
         }
 
-        // 이미지 → OCR 텍스트 추출 (Gemini Vision으로)
-        async function extractTextFromImage(base64Data) {
-            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${AI_KEYS.gemini}`;
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [
-                            { inlineData: { mimeType: 'image/jpeg', data: base64Data } },
-                            { text: '이 시험 문제 이미지의 텍스트를 그대로 추출해줘. 문제 번호, 보기 번호, 선택지 모두 포함. 추가 설명 없이 텍스트만.' }
-                        ]
-                    }]
-                })
-            });
-            if (!res.ok) throw new Error('OCR 실패');
-            const data = await res.json();
-            return data.candidates[0].content.parts[0].text.trim();
-        }
-
-        // 해설 프롬프트 생성
-        function buildExplanationPrompt(questionText, correctNum) {
+        // 해설 프롬프트
+        function buildPrompt(ocrText, correctNum) {
             return `다음은 공인중개사 시험 문제이고, 정답은 ${correctNum}번이야.
 
-${questionText}
+${ocrText}
+
+다음 규칙대로 해설을 작성해:
+- 200자 이내로 간결하게 (살짝 넘으면 문장 마무리)
+- 왜 정답이 그것인지, 주요 오답은 왜 틀린지 설명
+- 문제 내용을 그대로 반복하지 말기
+- 모든 단어는 한국어로만 작성
+- 반말로 짧고 간결하게
+
+해설:`;
+        }
+
+        // 방법1: Gemini Vision (이미지 직접 전송 → OCR+해설 한번에)
+        async function tryGeminiVision(base64, correctNum) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${AI_KEYS.gemini}`;
+            const prompt = `이 공인중개사 시험 문제 이미지를 보고 해설을 작성해줘. 정답은 ${correctNum}번이야.
 
 다음 규칙대로 해설을 작성해:
 - 왜 정답이 그것인지, 주요 오답은 왜 틀린지 설명
@@ -1103,20 +1106,49 @@ ${questionText}
 - 해설은 무조건 신뢰도 높은 내용 기반으로만
 
 해설:`;
-        }
 
-        // Gemini 호출
-        async function callGemini(prompt) {
-            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${AI_KEYS.gemini}`;
             const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }]
+                    contents: [{
+                        parts: [
+                            { inlineData: { mimeType: 'image/jpeg', data: base64 } },
+                            { text: prompt }
+                        ]
+                    }],
+                    generationConfig: { maxOutputTokens: 400 }
                 })
             });
-            if (!res.ok) throw new Error(`Gemini ${res.status}`);
+
+            if (!res.ok) {
+                const errText = await res.text();
+                throw new Error(`Gemini Vision ${res.status}: ${errText.substring(0, 100)}`);
+            }
             const data = await res.json();
+            if (!data.candidates || !data.candidates[0]) throw new Error('Gemini 응답 없음');
+            return data.candidates[0].content.parts[0].text.trim();
+        }
+
+        // 방법2: Gemini OCR만 (텍스트 추출용)
+        async function geminiOCR(base64) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${AI_KEYS.gemini}`;
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [
+                            { inlineData: { mimeType: 'image/jpeg', data: base64 } },
+                            { text: '이 시험 문제 이미지의 텍스트를 그대로 추출해. 문제번호, 보기, 선택지 모두 포함. 설명 없이 텍스트만.' }
+                        ]
+                    }],
+                    generationConfig: { maxOutputTokens: 800 }
+                })
+            });
+            if (!res.ok) throw new Error(`OCR 실패 ${res.status}`);
+            const data = await res.json();
+            if (!data.candidates || !data.candidates[0]) throw new Error('OCR 응답 없음');
             return data.candidates[0].content.parts[0].text.trim();
         }
 
@@ -1131,7 +1163,7 @@ ${questionText}
                 body: JSON.stringify({
                     model: 'llama-3.1-8b-instant',
                     messages: [{ role: 'user', content: prompt }],
-                    max_tokens: 300
+                    max_tokens: 400
                 })
             });
             if (!res.ok) throw new Error(`Groq ${res.status}`);
@@ -1150,7 +1182,7 @@ ${questionText}
                 body: JSON.stringify({
                     model: 'mistralai/mixtral-8x7b-instruct',
                     messages: [{ role: 'user', content: prompt }],
-                    max_tokens: 300
+                    max_tokens: 400
                 })
             });
             if (!res.ok) throw new Error(`OpenRouter ${res.status}`);
@@ -1158,64 +1190,124 @@ ${questionText}
             return data.choices[0].message.content.trim();
         }
 
-        // 멀티 모델 폴백으로 해설 생성
-        async function generateExplanation(prompt) {
-            const providers = [
-                { name: 'Gemini', fn: callGemini },
-                { name: 'Groq', fn: callGroq },
-                { name: 'OpenRouter', fn: callOpenRouter }
-            ];
-
-            for (const provider of providers) {
-                try {
-                    console.log(`해설 생성: ${provider.name} 시도...`);
-                    const result = await provider.fn(prompt);
-                    if (result && result.length > 10) {
-                        console.log(`해설 생성: ${provider.name} 성공`);
-                        return result;
-                    }
-                } catch (e) {
-                    console.warn(`${provider.name} 실패:`, e.message);
-                }
-            }
-            return null;
+        // Gemini 텍스트 해설 (OCR 텍스트 기반)
+        async function callGeminiText(prompt) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${AI_KEYS.gemini}`;
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { maxOutputTokens: 400 }
+                })
+            });
+            if (!res.ok) throw new Error(`Gemini Text ${res.status}`);
+            const data = await res.json();
+            if (!data.candidates || !data.candidates[0]) throw new Error('Gemini Text 응답 없음');
+            return data.candidates[0].content.parts[0].text.trim();
         }
 
-        // 전체 해설 파이프라인: 이미지 → OCR → 해설 생성
+        // 메인 해설 생성 (멀티 모델 폴백)
         async function getAIExplanation(question) {
             const cacheKey = question.image;
+            if (explanationCache[cacheKey]) return explanationCache[cacheKey];
 
-            // 캐시 확인
-            if (explanationCache[cacheKey]) {
-                return explanationCache[cacheKey];
-            }
-
-            // 이미지 로드 & base64 변환
             const img = document.getElementById('questionImage');
             if (!img || !img.complete || !img.naturalWidth) {
                 throw new Error('이미지 로드 안됨');
             }
-            const base64 = await imageToBase64(img);
 
-            // OCR로 텍스트 추출
-            const questionText = await extractTextFromImage(base64);
-            if (!questionText || questionText.length < 20) {
+            const base64 = imageToBase64(img);
+            const correctNum = question.correct + 1;
+            let ocrText = null;
+
+            // 1차: Gemini Vision (이미지 → 해설 한번에)
+            try {
+                console.log('1차: Gemini Vision 시도...');
+                const result = await tryGeminiVision(base64, correctNum);
+                if (result && result.length > 10) {
+                    console.log('✅ Gemini Vision 성공');
+                    explanationCache[cacheKey] = result;
+                    question.explanation = result;
+                    return result;
+                }
+            } catch (e) {
+                console.warn('❌ Gemini Vision 실패:', e.message);
+            }
+
+            // OCR 추출 (2~4차에서 공통 사용)
+            try {
+                console.log('OCR 추출 시도...');
+                ocrText = await geminiOCR(base64);
+                console.log('OCR 성공, 길이:', ocrText.length);
+            } catch (e) {
+                console.warn('❌ OCR 실패:', e.message);
+                throw new Error('이미지 텍스트 추출 실패');
+            }
+
+            if (!ocrText || ocrText.length < 20) {
                 throw new Error('OCR 텍스트 부족');
             }
 
-            // 해설 프롬프트 생성 & 호출
-            const prompt = buildExplanationPrompt(questionText, question.correct + 1);
-            const explanation = await generateExplanation(prompt);
+            const prompt = buildPrompt(ocrText, correctNum);
 
-            if (explanation) {
-                // 캐시 저장
-                explanationCache[cacheKey] = explanation;
-                // question 객체에도 저장 (결과 화면 오답 해설용)
-                question.explanation = explanation;
-                return explanation;
+            // 2차: Gemini 텍스트
+            try {
+                console.log('2차: Gemini Text 시도...');
+                const result = await callGeminiText(prompt);
+                if (result && result.length > 10) {
+                    console.log('✅ Gemini Text 성공');
+                    explanationCache[cacheKey] = result;
+                    question.explanation = result;
+                    return result;
+                }
+            } catch (e) {
+                console.warn('❌ Gemini Text 실패:', e.message);
+            }
+
+            // 3차: Groq
+            try {
+                console.log('3차: Groq 시도...');
+                const result = await callGroq(prompt);
+                if (result && result.length > 10) {
+                    console.log('✅ Groq 성공');
+                    explanationCache[cacheKey] = result;
+                    question.explanation = result;
+                    return result;
+                }
+            } catch (e) {
+                console.warn('❌ Groq 실패:', e.message);
+            }
+
+            // 4차: OpenRouter
+            try {
+                console.log('4차: OpenRouter 시도...');
+                const result = await callOpenRouter(prompt);
+                if (result && result.length > 10) {
+                    console.log('✅ OpenRouter 성공');
+                    explanationCache[cacheKey] = result;
+                    question.explanation = result;
+                    return result;
+                }
+            } catch (e) {
+                console.warn('❌ OpenRouter 실패:', e.message);
             }
 
             throw new Error('모든 모델 실패');
+        }
+
+        // retry 핸들러
+        function retryExplanation() {
+            const question = currentQuestions[currentQuestionIndex];
+            const explanationText = document.getElementById('explanationText');
+            explanationText.innerHTML = '<div class="explanation-loading"><div class="spinner"></div>AI 해설 재시도 중...</div>';
+
+            getAIExplanation(question).then((text) => {
+                explanationText.textContent = text;
+            }).catch((err) => {
+                console.error('AI 해설 재시도 실패:', err);
+                explanationText.innerHTML = '<span style="color:#f44336;">해설을 불러오지 못했습니다.</span><br><button class="retry-btn" onclick="retryExplanation()">🔄 다시 시도</button>';
+            });
         }
 
         function selectAnswer(answerIndex) {
@@ -1247,14 +1339,13 @@ ${questionText}
             if (question.explanation && question.explanation.trim() !== '') {
                 explanationText.textContent = question.explanation;
             } else {
-                // 로딩 표시
                 explanationText.innerHTML = '<div class="explanation-loading"><div class="spinner"></div>AI 해설 생성 중...</div>';
 
                 getAIExplanation(question).then((text) => {
                     explanationText.textContent = text;
                 }).catch((err) => {
                     console.error('AI 해설 실패:', err);
-                    explanationText.innerHTML = '<span class="explanation-error">해설을 불러오지 못했습니다.</span>';
+                    explanationText.innerHTML = '<span style="color:#f44336;">해설을 불러오지 못했습니다.</span><br><button class="retry-btn" onclick="retryExplanation()">🔄 다시 시도</button>';
                 });
             }
         }
