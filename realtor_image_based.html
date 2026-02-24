@@ -1242,14 +1242,34 @@ ${ocrText}
                 console.log('OCR 성공, 길이:', ocrText.length);
             } catch (e) {
                 console.warn('❌ OCR 실패:', e.message);
-                throw new Error('이미지 텍스트 추출 실패');
+                ocrText = null;
             }
 
-            if (!ocrText || ocrText.length < 20) {
-                throw new Error('OCR 텍스트 부족');
-            }
+            // OCR 성공 시 텍스트 기반 프롬프트, 실패 시 파일명 기반 프롬프트
+            let prompt;
+            if (ocrText && ocrText.length >= 20) {
+                prompt = buildPrompt(ocrText, correctNum);
+            } else {
+                // 파일명에서 정보 추출 (예: 2025_1_1_03.png → 2025년 1차 1교시 3번)
+                const match = question.image.match(/(\d{4})_(\d+)_(\d+)_(\d+)/);
+                if (match) {
+                    const [, yr, round, session, num] = match;
+                    const subjectName = question.subject === 'intro' ? '부동산학개론' : '민법 및 민사특별법';
+                    prompt = `공인중개사 시험 ${yr}년 ${round}차 ${session}교시 ${parseInt(num)}번 문제야. 과목은 ${subjectName}이고 정답은 ${correctNum}번이야.
 
-            const prompt = buildPrompt(ocrText, correctNum);
+다음 규칙대로 해설을 작성해:
+- 왜 정답이 그것인지, 주요 오답은 왜 틀린지 설명
+- 문제 내용을 그대로 반복하지 말기
+- 모든 단어는 한국어로만 작성
+- 반말로 짧고 간결하게
+- 해설은 무조건 신뢰도 높은 내용 기반으로만
+
+해설:`;
+                } else {
+                    prompt = `공인중개사 시험 문제이고 정답은 ${correctNum}번이야. 이 문제에 대해 200자 이내로 간결하게 해설해줘. 한국어 반말로.`;
+                }
+                console.log('OCR 실패 → 파일명 기반 프롬프트 사용');
+            }
 
             // 2차: Gemini 텍스트
             try {
