@@ -1191,9 +1191,9 @@
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')
-                // ## 제목 → 굵은 텍스트 + 줄바꿈
-                .replace(/^###\s+(.+)$/gm, '<br><strong>$1</strong><br>')
-                .replace(/^##\s+(.+)$/gm, '<br><strong>$1</strong><br>')
+                // ## 제목 → 굵은 텍스트
+                .replace(/^###\s+(.+)$/gm, '<strong>$1</strong>')
+                .replace(/^##\s+(.+)$/gm, '<strong>$1</strong>')
                 // **굵게**
                 .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
                 // *기울임*
@@ -1204,8 +1204,15 @@
                 .replace(/^\s*\d+\.\s+(.+)$/gm, '<li>$1</li>')
                 // 연속 <li>를 <ul>로 감싸기
                 .replace(/((<li>.*<\/li>\s*)+)/g, '<ul>$1</ul>')
+                // $$ 수식 블록 제거 (LaTeX 표시 안 되므로)
+                .replace(/\$\$/g, '')
                 // 줄바꿈
-                .replace(/\n/g, '<br>');
+                .replace(/\n/g, '<br>')
+                // 연속 <br> 정리 (최대 1개로)
+                .replace(/(<br>\s*){2,}/g, '<br>')
+                // <ul> 앞뒤 불필요한 <br> 제거
+                .replace(/<br>\s*<ul>/g, '<ul>')
+                .replace(/<\/ul>\s*<br>/g, '</ul>');
         }
 
         // 이미지 → base64
