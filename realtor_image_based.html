@@ -150,6 +150,71 @@
             transform: none;
         }
 
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .menu-btn {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 18px 20px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .menu-btn:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .menu-btn:active {
+            transform: translateY(0);
+        }
+
+        .menu-icon {
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+
+        .menu-label {
+            font-size: 17px;
+            font-weight: bold;
+            color: #333;
+            display: block;
+        }
+
+        .menu-desc {
+            font-size: 13px;
+            color: #888;
+            display: block;
+            margin-top: 2px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: #667eea;
+            font-size: 15px;
+            cursor: pointer;
+            padding: 5px 0;
+            margin-bottom: 15px;
+            text-align: left;
+            display: block;
+        }
+
+        .back-btn:active {
+            opacity: 0.6;
+        }
+
         .question-screen {
             display: none;
         }
@@ -608,25 +673,52 @@
     <div class="container">
         <div class="header">
             <h1>🏠 공인중개사 시험 문제집</h1>
-            <p id="headerSubtitle">2020-2025년 기출문제</p>
+            <p id="headerSubtitle">공인중개사 시험 대비</p>
             <div class="progress-bar">
                 <div class="progress-fill" id="progressFill"></div>
             </div>
         </div>
 
         <div class="content">
-            <!-- 시작 화면 -->
-            <div class="start-screen" id="startScreen">
+            <!-- 메인 메뉴 -->
+            <div class="start-screen" id="mainMenu">
                 <h2>공인중개사 시험 대비 문제집</h2>
                 <p>
-                    기출문제를 바탕으로 만들어진 문제집입니다.<br>
-                    2025년<br>
-                    공인중개사법, 부동산공법 반영 완료.<br>
-                    이정민 화이팅!
+                    학습 유형을 선택해주세요.
                 </p>
 
-                <div class="select-group">
-                    <label for="yearSelect">📅 년도 선택:</label>
+                <div class="menu-buttons">
+                    <button class="menu-btn" onclick="selectMode('past')">
+                        <span class="menu-icon">📝</span>
+                        <span class="menu-label">기출 문제집</span>
+                        <span class="menu-desc">연도별 실제 기출문제</span>
+                    </button>
+                    <button class="menu-btn" onclick="selectMode('mock')">
+                        <span class="menu-icon">🎯</span>
+                        <span class="menu-label">모의고사</span>
+                        <span class="menu-desc">실전 모의고사</span>
+                    </button>
+                    <button class="menu-btn" onclick="selectMode('practice')">
+                        <span class="menu-icon">📚</span>
+                        <span class="menu-label">일반 문제집</span>
+                        <span class="menu-desc">주제별 연습문제</span>
+                    </button>
+                    <button class="menu-btn" onclick="selectMode('all')">
+                        <span class="menu-icon">🔥</span>
+                        <span class="menu-label">ALL</span>
+                        <span class="menu-desc">모든 문제 통합</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 시작 화면 (모드별 설정) -->
+            <div class="start-screen" id="startScreen" style="display:none;">
+                <button class="back-btn" onclick="goMainMenu()">← 메뉴로 돌아가기</button>
+                <h2 id="startTitle">기출 문제집</h2>
+                <p id="startDesc">기출문제를 바탕으로 만들어진 문제집입니다.</p>
+
+                <div class="select-group" id="yearSelectGroup">
+                    <label for="yearSelect" id="yearLabel">📅 년도 선택:</label>
                     <select id="yearSelect">
                         <option value="all">전체 년도</option>
                         <option value="2025">2025년 (제36회)</option>
@@ -759,11 +851,11 @@
         // NN: 문제번호 (01-40)
         const questionDatabase = [
             // 2025년 1차 1교시 - 부동산학개론 (1-40번)
-            { year: 2025, subject: 'intro', image: 'questions/2025_1_1_01.png', correct: 0, explanation: ''},
-            { year: 2025, subject: 'intro', image: 'questions/2025_1_1_02.png', correct: 0, explanation: ''},
-            { year: 2025, subject: 'intro', image: 'questions/2025_1_1_03.png', correct: 2, explanation: ''},
+            { year: 2025, subject: 'intro', image: 'questions/2025_1_1_01.png', correct: 0, explanation: '부동성(fixity)은 토지가 물리적으로 고정되어 있어 이동할 수 없다는 특성을 말합니다.' },
+            { year: 2025, subject: 'intro', image: 'questions/2025_1_1_02.png', correct: 0, explanation: '한국표준산업분류(KSIC)에서 부동산 임대 및 공급업은 부동산관련 서비스업에 해당하지 않습니다.' },
+            { year: 2025, subject: 'intro', image: 'questions/2025_1_1_03.png', correct: 2, explanation: '다중주택은 건축법상 단독주택의 한 종류입니다.' },
             { year: 2025, subject: 'intro', image: 'questions/2025_1_1_04.png', correct: 2, explanation: ''},
-            { year: 2025, subject: 'intro', image: 'questions/2025_1_1_05.png', correct: 3, explanation: ''},
+            { year: 2025, subject: 'intro', image: 'questions/2025_1_1_05.png', correct: 3, explanation: 'STP는 Segmentation, Targeting, Positioning입니다.'},
             { year: 2025, subject: 'intro', image: 'questions/2025_1_1_06.png', correct: 2, explanation: ''},
             { year: 2025, subject: 'intro', image: 'questions/2025_1_1_07.png', correct: 4, explanation: ''},
             { year: 2025, subject: 'intro', image: 'questions/2025_1_1_08.png', correct: 0, explanation: ''},
@@ -843,91 +935,14 @@
             { year: 2025, subject: 'civil', image: 'questions/2025_1_1_80.png', correct: 2, explanation: ''},
             
             // 2025년 2차 1교시 - 공인중개사법 (1-40번)
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_01.png', correct: 4, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_02.png', correct: 1, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_03.png', correct: 0, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_04.png', correct: 0, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_05.png', correct: 3, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_06.png', correct: 2, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_07.png', correct: 4, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_08.png', correct: 4, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_09.png', correct: 0, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_10.png', correct: 4, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_11.png', correct: 2, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_12.png', correct: 2, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_13.png', correct: 2, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_14.png', correct: 3, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_15.png', correct: 4, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_16.png', correct: 3, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_17.png', correct: 4, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_18.png', correct: 1, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_19.png', correct: 4, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_20.png', correct: 3, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_21.png', correct: 1, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_22.png', correct: 2, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_23.png', correct: 4, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_24.png', correct: 0, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_25.png', correct: 2, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_26.png', correct: 0, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_27.png', correct: 3, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_28.png', correct: 1, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_29.png', correct: 3, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_30.png', correct: 2, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_31.png', correct: 1, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_32.png', correct: 0, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_33.png', correct: 2, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_34.png', correct: 1, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_35.png', correct: 2, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_36.png', correct: 0, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_37.png', correct: 1, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_38.png', correct: 3, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_39.png', correct: 1, explanation: ''},
-            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_40.png', correct: 1, explanation: ''},
+            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_01.png', correct: 4, explanation: '공인중개사법 설명' },
+            { year: 2025, subject: 'broker', image: 'questions/2025_2_1_02.png', correct: 1, explanation: '공인중개사 자격증 관련' },
             
             // 2025년 2차 1교시 - 부동산공법 (41-80번)
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_41.png', correct: 2, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_42.png', correct: 3, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_43.png', correct: 1, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_44.png', correct: 4, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_45.png', correct: 1, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_46.png', correct: 2, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_47.png', correct: 4, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_48.png', correct: 4, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_49.png', correct: 3, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_50.png', correct: 3, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_51.png', correct: 0, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_52.png', correct: 1, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_53.png', correct: 4, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_54.png', correct: 4, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_55.png', correct: 1, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_56.png', correct: 3, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_57.png', correct: 2, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_58.png', correct: 4, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_59.png', correct: 0, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_60.png', correct: 3, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_61.png', correct: 1, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_62.png', correct: 2, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_63.png', correct: 3, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_64.png', correct: 4, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_65.png', correct: 3, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_66.png', correct: 2, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_67.png', correct: 1, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_68.png', correct: 1, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_69.png', correct: 4, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_70.png', correct: 0, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_71.png', correct: 0, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_72.png', correct: 1, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_73.png', correct: 0, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_74.png', correct: 3, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_75.png', correct: 3, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_76.png', correct: 1, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_77.png', correct: 0, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_78.png', correct: 2, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_79.png', correct: 2, explanation: ''},
-            { year: 2025, subject: 'public', image: 'questions/2025_2_1_80.png', correct: 0, explanation: ''},
+            { year: 2025, subject: 'public', image: 'questions/2025_2_1_41.png', correct: 2, explanation: '국토계획법 관련' },
             
             // 2025년 2차 2교시 - 부동산공시법 및 세법 (1-40번)
-            { year: 2025, subject: 'disclosure', image: 'questions/2025_2_2_01.png', correct: 0, explanation: '' },
+            { year: 2025, subject: 'disclosure', image: 'questions/2025_2_2_01.png', correct: 0, explanation: '공간정보법 설명' },
 
             // 2024년 1차 1교시 - 부동산학개론 (1-40번)
             { year: 2024, subject: 'intro', image: 'questions/2024_1_1_01.png', correct: 3, explanation: ''},
@@ -1104,16 +1119,148 @@
         let questionAnswered = [];
         let startTime;
         let timerInterval;
+        let currentMode = 'past'; // past, mock, practice, all
+
+        // 모의고사 문제 DB (나중에 추가)
+        const mockDatabase = [];
+
+        // 일반 문제집 DB (나중에 추가)
+        const practiceDatabase = [];
+
+        // 모드 선택
+        function selectMode(mode) {
+            currentMode = mode;
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
+
+            const yearGroup = document.getElementById('yearSelectGroup');
+            const yearLabel = document.getElementById('yearLabel');
+            const startTitle = document.getElementById('startTitle');
+            const startDesc = document.getElementById('startDesc');
+
+            if (mode === 'past') {
+                startTitle.textContent = '📝 기출 문제집';
+                startDesc.innerHTML = '연도별 실제 기출문제입니다.<br>2023, 2024, 2025년 반영 완료.';
+                yearGroup.style.display = 'block';
+                yearLabel.textContent = '📅 년도 선택:';
+                document.getElementById('yearSelect').innerHTML = `
+                    <option value="all">전체 년도</option>
+                    <option value="2025">2025년 (제36회)</option>
+                    <option value="2024">2024년 (제35회)</option>
+                    <option value="2023">2023년 (제34회)</option>
+                    <option value="2022">2022년 (제33회)</option>
+                    <option value="2021">2021년 (제32회)</option>
+                    <option value="2020">2020년 (제31회)</option>
+                    <option value="random">🎲 랜덤 (맞춤형)</option>
+                `;
+                document.getElementById('headerSubtitle').textContent = '기출 문제집';
+            } else if (mode === 'mock') {
+                startTitle.textContent = '🎯 모의고사';
+                startDesc.innerHTML = '실전처럼 풀어보는 모의고사입니다.';
+                yearGroup.style.display = 'block';
+                yearLabel.textContent = '📋 모의고사:';
+                document.getElementById('yearSelect').innerHTML = `
+                    <option value="all">전체</option>
+                    <option value="random">🎲 랜덤 (맞춤형)</option>
+                `;
+                document.getElementById('headerSubtitle').textContent = '모의고사';
+            } else if (mode === 'practice') {
+                startTitle.textContent = '📚 일반 문제집';
+                startDesc.innerHTML = '주제별 연습문제입니다.';
+                yearGroup.style.display = 'block';
+                yearLabel.textContent = '📋 문제집:';
+                document.getElementById('yearSelect').innerHTML = `
+                    <option value="all">전체</option>
+                    <option value="random">🎲 랜덤 (맞춤형)</option>
+                `;
+                document.getElementById('headerSubtitle').textContent = '일반 문제집';
+            } else if (mode === 'all') {
+                startTitle.textContent = '🔥 ALL';
+                startDesc.innerHTML = '기출 + 모의고사 + 일반 문제 모두 포함.';
+                yearGroup.style.display = 'block';
+                yearLabel.textContent = '📋 문제집:';
+
+                // 모든 DB에서 옵션 동적 생성
+                let options = '<option value="all">전체</option>';
+
+                // 기출 년도 추출
+                const pastYears = [...new Set(questionDatabase.map(q => q.year))].sort((a, b) => b - a);
+                if (pastYears.length > 0) {
+                    options += '<optgroup label="📝 기출 문제집">';
+                    const examNames = { 2025: '제36회', 2024: '제35회', 2023: '제34회', 2022: '제33회', 2021: '제32회', 2020: '제31회' };
+                    pastYears.forEach(y => {
+                        options += `<option value="past_${y}">${y}년 기출${examNames[y] ? ' (' + examNames[y] + ')' : ''}</option>`;
+                    });
+                    options += '</optgroup>';
+                }
+
+                // 모의고사 항목 추출
+                const mockItems = [...new Set(mockDatabase.map(q => q.year))].sort((a, b) => b - a);
+                if (mockItems.length > 0) {
+                    options += '<optgroup label="🎯 모의고사">';
+                    mockItems.forEach(y => {
+                        options += `<option value="mock_${y}">모의고사 ${y}</option>`;
+                    });
+                    options += '</optgroup>';
+                }
+
+                // 일반 문제집 항목 추출
+                const practiceItems = [...new Set(practiceDatabase.map(q => q.year))].sort((a, b) => b - a);
+                if (practiceItems.length > 0) {
+                    options += '<optgroup label="📚 일반 문제집">';
+                    practiceItems.forEach(y => {
+                        options += `<option value="practice_${y}">문제집 ${y}</option>`;
+                    });
+                    options += '</optgroup>';
+                }
+
+                options += '<option value="random">🎲 랜덤 (맞춤형)</option>';
+                document.getElementById('yearSelect').innerHTML = options;
+                document.getElementById('headerSubtitle').textContent = 'ALL';
+            }
+        }
+
+        // 메인 메뉴로 돌아가기
+        function goMainMenu() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('mainMenu').style.display = 'block';
+            document.getElementById('headerSubtitle').textContent = '공인중개사 시험 대비';
+        }
 
         function startQuiz() {
             const selectedYear = document.getElementById('yearSelect').value;
             const selectedSubject = document.getElementById('subjectSelect').value;
             const questionCount = parseInt(document.getElementById('questionCount').value) || 40;
 
-            let filteredQuestions = [...questionDatabase];
+            // 모드별 문제 DB 선택
+            let sourceDB;
+            if (currentMode === 'past') {
+                sourceDB = [...questionDatabase];
+            } else if (currentMode === 'mock') {
+                sourceDB = [...mockDatabase];
+            } else if (currentMode === 'practice') {
+                sourceDB = [...practiceDatabase];
+            } else {
+                // ALL: 모든 DB 합침
+                sourceDB = [...questionDatabase, ...mockDatabase, ...practiceDatabase];
+            }
+
+            let filteredQuestions = sourceDB;
             
             if (selectedYear !== 'all' && selectedYear !== 'random') {
-                filteredQuestions = filteredQuestions.filter(q => q.year == selectedYear);
+                // ALL 모드: past_2025, mock_1 등 접두사 처리
+                if (selectedYear.startsWith('past_')) {
+                    const year = selectedYear.replace('past_', '');
+                    filteredQuestions = questionDatabase.filter(q => q.year == year);
+                } else if (selectedYear.startsWith('mock_')) {
+                    const year = selectedYear.replace('mock_', '');
+                    filteredQuestions = mockDatabase.filter(q => q.year == year);
+                } else if (selectedYear.startsWith('practice_')) {
+                    const year = selectedYear.replace('practice_', '');
+                    filteredQuestions = practiceDatabase.filter(q => q.year == year);
+                } else {
+                    filteredQuestions = filteredQuestions.filter(q => q.year == selectedYear);
+                }
             }
 
             if (selectedSubject !== 'all') {
@@ -1171,7 +1318,7 @@
                 `문제 ${currentQuestionIndex + 1}/${currentQuestions.length}`;
             
             document.getElementById('yearBadge').textContent = `${question.year}년`;
-            
+
             const subjectNames = {
                 intro: '부동산학개론',
                 civil: '민법 및 민사특별법',
@@ -1179,8 +1326,8 @@
                 public: '부동산공법',
                 disclosure: '부동산공시법 및 세법'
             };
-            document.getElementById('subjectBadge').textContent = subjectNames[question.subject] || question.subject;                       
-
+            document.getElementById('subjectBadge').textContent = subjectNames[question.subject] || question.subject;
+            
             // 이미지 로드
             const imgContainer = document.getElementById('questionImage').parentElement;
             const imgElement = document.getElementById('questionImage');
@@ -1932,9 +2079,10 @@ ${ocrText}
             questionAnswered = [];
             document.getElementById('questionScreen').style.display = 'none';
             document.getElementById('resultScreen').style.display = 'none';
-            document.getElementById('startScreen').style.display = 'block';
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('mainMenu').style.display = 'block';
             document.getElementById('progressFill').style.width = '0%';
-            document.getElementById('headerSubtitle').textContent = '2020-2025년 기출문제';
+            document.getElementById('headerSubtitle').textContent = '공인중개사 시험 대비';
         }
 
         function restartQuiz() {
