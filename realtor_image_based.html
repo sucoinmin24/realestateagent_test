@@ -708,7 +708,37 @@
                         <span class="menu-label">ALL</span>
                         <span class="menu-desc">모든 문제 통합</span>
                     </button>
+                    <button class="menu-btn" onclick="showSettings()" style="border-color: #ddd;">
+                        <span class="menu-icon">⚙️</span>
+                        <span class="menu-label">API 키 설정</span>
+                        <span class="menu-desc" id="apiKeyStatus">AI 해설 기능을 위한 API 키 관리</span>
+                    </button>
                 </div>
+            </div>
+
+            <!-- API 키 설정 화면 -->
+            <div class="start-screen" id="settingsScreen" style="display:none;">
+                <button class="back-btn" onclick="closeSettings()">← 메뉴로 돌아가기</button>
+                <h2>⚙️ API 키 설정</h2>
+                <p>AI 해설 기능을 사용하려면 최소 1개의 API 키가 필요합니다.<br>키는 이 기기에만 저장됩니다.</p>
+
+                <div class="select-group">
+                    <label>🔵 Gemini API 키 <a href="https://aistudio.google.com/apikey" target="_blank" style="font-size:12px; color:#667eea;">(발급받기)</a></label>
+                    <input type="password" id="keyGemini" placeholder="AIzaSy..." style="width:100%; padding:12px; border:2px solid #ddd; border-radius:10px; font-size:14px;">
+                </div>
+
+                <div class="select-group">
+                    <label>🟢 Groq API 키 <a href="https://console.groq.com/keys" target="_blank" style="font-size:12px; color:#667eea;">(발급받기)</a></label>
+                    <input type="password" id="keyGroq" placeholder="gsk_..." style="width:100%; padding:12px; border:2px solid #ddd; border-radius:10px; font-size:14px;">
+                </div>
+
+                <div class="select-group">
+                    <label>🟡 OpenRouter API 키 <a href="https://openrouter.ai/keys" target="_blank" style="font-size:12px; color:#667eea;">(발급받기)</a></label>
+                    <input type="password" id="keyOpenrouter" placeholder="sk-or-..." style="width:100%; padding:12px; border:2px solid #ddd; border-radius:10px; font-size:14px;">
+                </div>
+
+                <button class="btn" onclick="saveApiKeys()" style="margin-top:15px;">💾 저장</button>
+                <button class="btn" onclick="clearApiKeys()" style="margin-top:10px; background: linear-gradient(135deg, #f44336, #e91e63);">🗑️ 전체 삭제</button>
             </div>
 
             <!-- 시작 화면 (모드별 설정) -->
@@ -1225,7 +1255,71 @@
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('mainMenu').style.display = 'block';
             document.getElementById('headerSubtitle').textContent = '공인중개사 시험 대비';
+            updateApiKeyStatus();
         }
+
+        // 설정 화면
+        function showSettings() {
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('settingsScreen').style.display = 'block';
+            document.getElementById('headerSubtitle').textContent = 'API 키 설정';
+            // 기존 키 표시 (마스킹)
+            document.getElementById('keyGemini').value = localStorage.getItem('ai_key_gemini') || '';
+            document.getElementById('keyGroq').value = localStorage.getItem('ai_key_groq') || '';
+            document.getElementById('keyOpenrouter').value = localStorage.getItem('ai_key_openrouter') || '';
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsScreen').style.display = 'none';
+            document.getElementById('mainMenu').style.display = 'block';
+            document.getElementById('headerSubtitle').textContent = '공인중개사 시험 대비';
+            updateApiKeyStatus();
+        }
+
+        function saveApiKeys() {
+            const gemini = document.getElementById('keyGemini').value.trim();
+            const groq = document.getElementById('keyGroq').value.trim();
+            const openrouter = document.getElementById('keyOpenrouter').value.trim();
+
+            if (gemini) localStorage.setItem('ai_key_gemini', gemini);
+            else localStorage.removeItem('ai_key_gemini');
+
+            if (groq) localStorage.setItem('ai_key_groq', groq);
+            else localStorage.removeItem('ai_key_groq');
+
+            if (openrouter) localStorage.setItem('ai_key_openrouter', openrouter);
+            else localStorage.removeItem('ai_key_openrouter');
+
+            alert('API 키가 저장되었습니다.');
+            closeSettings();
+        }
+
+        function clearApiKeys() {
+            if (!confirm('모든 API 키를 삭제하시겠습니까?')) return;
+            localStorage.removeItem('ai_key_gemini');
+            localStorage.removeItem('ai_key_groq');
+            localStorage.removeItem('ai_key_openrouter');
+            document.getElementById('keyGemini').value = '';
+            document.getElementById('keyGroq').value = '';
+            document.getElementById('keyOpenrouter').value = '';
+            alert('API 키가 삭제되었습니다.');
+            updateApiKeyStatus();
+        }
+
+        function updateApiKeyStatus() {
+            const count = [AI_KEYS.gemini, AI_KEYS.groq, AI_KEYS.openrouter].filter(k => k).length;
+            const el = document.getElementById('apiKeyStatus');
+            if (count > 0) {
+                el.textContent = `✅ ${count}개 키 등록됨`;
+                el.style.color = '#4caf50';
+            } else {
+                el.textContent = '⚠️ API 키를 등록해주세요';
+                el.style.color = '#f44336';
+            }
+        }
+
+        // 페이지 로드 시 상태 표시
+        document.addEventListener('DOMContentLoaded', updateApiKeyStatus);
 
         function startQuiz() {
             const selectedYear = document.getElementById('yearSelect').value;
@@ -1416,10 +1510,14 @@
 
         // ====== AI 해설 시스템 ======
         const AI_KEYS = {
-            gemini: 'AIzaSyCaA5PAyY5v2KfM_O8T1VkbM3lriJIOAWA',
-            groq: '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',
-            openrouter: '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'
+            get gemini() { return localStorage.getItem('ai_key_gemini') || ''; },
+            get groq() { return localStorage.getItem('ai_key_groq') || ''; },
+            get openrouter() { return localStorage.getItem('ai_key_openrouter') || ''; }
         };
+
+        function hasAnyApiKey() {
+            return AI_KEYS.gemini || AI_KEYS.groq || AI_KEYS.openrouter;
+        }
 
         const explanationCache = {};
 
@@ -2080,9 +2178,11 @@ ${ocrText}
             document.getElementById('questionScreen').style.display = 'none';
             document.getElementById('resultScreen').style.display = 'none';
             document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('settingsScreen').style.display = 'none';
             document.getElementById('mainMenu').style.display = 'block';
             document.getElementById('progressFill').style.width = '0%';
             document.getElementById('headerSubtitle').textContent = '공인중개사 시험 대비';
+            updateApiKeyStatus();
         }
 
         function restartQuiz() {
