@@ -2124,10 +2124,25 @@ ${ocrText}
             const userMsg = input.value.trim();
             if (!userMsg) return;
 
+            if (!hasAnyApiKey()) {
+                alert('API 키가 설정되지 않았습니다. 설정에서 키를 등록해주세요.');
+                return;
+            }
+
             const question = currentQuestions[currentQuestionIndex];
             const cacheKey = question.image;
-            const modelName = usedModels[cacheKey];
-            if (!modelName) return;
+            let modelName = usedModels[cacheKey];
+
+            // 수동 해설인 경우 (AI 호출 없었던 경우) → 사용 가능한 모델 자동 선택
+            if (!modelName) {
+                if (AI_KEYS.gemini) modelName = 'geminiVision';
+                else if (AI_KEYS.groq) modelName = 'groqVision';
+                else if (AI_KEYS.openrouter) modelName = 'openrouter';
+                else return;
+
+                usedModels[cacheKey] = modelName;
+                chatHistories[cacheKey] = [{ role: 'assistant', content: question.explanation || '' }];
+            }
 
             // 사용자 메시지 표시
             const chatHistory = document.getElementById('chatHistory');
