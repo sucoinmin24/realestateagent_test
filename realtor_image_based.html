@@ -2135,9 +2135,9 @@ ${ocrText}
 
             // 수동 해설인 경우 (AI 호출 없었던 경우) → 사용 가능한 모델 자동 선택
             if (!modelName) {
-                if (AI_KEYS.gemini) modelName = 'geminiVision';
-                else if (AI_KEYS.groq) modelName = 'groqVision';
+                if (AI_KEYS.groq) modelName = 'groqVision';
                 else if (AI_KEYS.openrouter) modelName = 'openrouter';
+                else if (AI_KEYS.gemini) modelName = 'geminiVision';
                 else return;
 
                 usedModels[cacheKey] = modelName;
