@@ -1430,20 +1430,28 @@
                 startDesc.innerHTML = '실전처럼 풀어보는 모의고사입니다.';
                 yearGroup.style.display = 'block';
                 yearLabel.textContent = '📋 모의고사:';
-                document.getElementById('yearSelect').innerHTML = `
-                    <option value="all">전체</option>
-                    <option value="random">🎲 랜덤 (맞춤형)</option>
-                `;
+
+                let options = '<option value="all">전체</option>';
+                const mockItems = [...new Set(mockDatabase.map(q => q.year))].sort();
+                mockItems.forEach(item => {
+                    options += `<option value="${item}">${item}</option>`;
+                });
+                options += '<option value="random">🎲 랜덤 (맞춤형)</option>';
+                document.getElementById('yearSelect').innerHTML = options;
                 document.getElementById('headerSubtitle').textContent = '모의고사';
             } else if (mode === 'practice') {
                 startTitle.textContent = '📚 일반 문제집';
                 startDesc.innerHTML = '주제별 연습문제입니다.';
                 yearGroup.style.display = 'block';
                 yearLabel.textContent = '📋 문제집:';
-                document.getElementById('yearSelect').innerHTML = `
-                    <option value="all">전체</option>
-                    <option value="random">🎲 랜덤 (맞춤형)</option>
-                `;
+
+                let options = '<option value="all">전체</option>';
+                const practiceItems = [...new Set(practiceDatabase.map(q => q.year))].sort();
+                practiceItems.forEach(item => {
+                    options += `<option value="${item}">${item}</option>`;
+                });
+                options += '<option value="random">🎲 랜덤 (맞춤형)</option>';
+                document.getElementById('yearSelect').innerHTML = options;
                 document.getElementById('headerSubtitle').textContent = '일반 문제집';
             } else if (mode === 'all') {
                 startTitle.textContent = '🔥 ALL';
