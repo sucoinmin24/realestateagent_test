@@ -1559,39 +1559,8 @@
             }
         }
 
-        // 페이지 로드 시 상태 표시 + 해설 JSON 로드
-        document.addEventListener('DOMContentLoaded', () => {
-            updateApiKeyStatus();
-            loadExplanations();
-        });
-
-        // 외부 텍스트 파일에서 해설 로드
-        async function loadExplanations() {
-            try {
-                const res = await fetch('./explanations.txt?' + Date.now());
-                if (!res.ok) return;
-                const text = await res.text();
-                const blocks = text.split(/===(.+?)===/);
-                // blocks: ['', 'questions/xxx.png', '해설내용', 'questions/yyy.png', '해설내용', ...]
-                const data = {};
-                for (let i = 1; i < blocks.length; i += 2) {
-                    const key = blocks[i].trim();
-                    const value = (blocks[i + 1] || '').trim();
-                    if (key && value) data[key] = value;
-                }
-                const allDBs = [questionDatabase, mockDatabase, practiceDatabase];
-                allDBs.forEach(db => {
-                    db.forEach(q => {
-                        if (data[q.image]) {
-                            q.explanation = data[q.image];
-                        }
-                    });
-                });
-                console.log('✅ 해설 로드 완료:', Object.keys(data).length, '개');
-            } catch (e) {
-                console.log('해설 파일 없음 (정상)');
-            }
-        }
+        // 페이지 로드 시 상태 표시
+        document.addEventListener('DOMContentLoaded', updateApiKeyStatus);
 
         function startQuiz() {
             const selectedYear = document.getElementById('yearSelect').value;
@@ -1743,7 +1712,16 @@
             
             if (isAnswered) {
                 const cached = explanationCache[question.image] || question.explanation;
-                explanationText.innerHTML = mdToHtml(cached);
+                if (cached && cached.trim() !== '') {
+                    explanationText.innerHTML = mdToHtml(cached);
+                } else {
+                    const expImgPath = getExplanationImagePath(question.image);
+                    checkExplanationImage(expImgPath).then((exists) => {
+                        if (exists) {
+                            explanationText.innerHTML = explanationImageHtml(expImgPath);
+                        }
+                    });
+                }
                 explanationBox.classList.add('show');
 
                 // 채팅 히스토리 복원
@@ -1862,6 +1840,26 @@
             html = html.replace(/%%MATH(\d+)%%/g, (_, idx) => mathBlocks[parseInt(idx)]);
 
             return html;
+        }
+
+        // 해설 이미지 경로 생성 (questions/xxx.png → explanations/xxx.png)
+        function getExplanationImagePath(questionImage) {
+            return questionImage.replace('questions/', 'explanations/');
+        }
+
+        // 해설 이미지 존재 여부 확인
+        function checkExplanationImage(path) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve(true);
+                img.onerror = () => resolve(false);
+                img.src = path;
+            });
+        }
+
+        // 해설 이미지 HTML 생성
+        function explanationImageHtml(path) {
+            return `<img src="${path}" style="width:100%; height:auto; border-radius:8px; margin-top:5px;" alt="해설">`;
         }
 
         // 이미지 → base64
@@ -2343,19 +2341,29 @@ ${ocrText}
             const explanationText = document.getElementById('explanationText');
             explanationBox.classList.add('show');
 
-            // 기존 해설이 있으면 바로 표시, 없으면 AI 생성
+            // 해설 표시: 이미지 우선 → 텍스트 → AI 생성
             if (question.explanation && question.explanation.trim() !== '') {
                 explanationText.innerHTML = mdToHtml(question.explanation);
                 showFollowupUI();
             } else {
-                explanationText.innerHTML = '<div class="explanation-loading"><div class="spinner"></div>AI 해설 생성 중...</div>';
+                explanationText.innerHTML = '<div class="explanation-loading"><div class="spinner"></div>해설 로딩 중...</div>';
 
-                getAIExplanation(question).then((text) => {
-                    explanationText.innerHTML = mdToHtml(text);
-                    showFollowupUI();
-                }).catch((err) => {
-                    console.error('AI 해설 실패:', err);
-                    explanationText.innerHTML = '<span style="color:#f44336;">해설을 불러오지 못했습니다.</span><br><button class="retry-btn" onclick="retryExplanation()">🔄 다시 시도</button>';
+                const expImgPath = getExplanationImagePath(question.image);
+                checkExplanationImage(expImgPath).then((exists) => {
+                    if (exists) {
+                        explanationText.innerHTML = explanationImageHtml(expImgPath);
+                        showFollowupUI();
+                    } else {
+                        // 이미지도 없으면 AI 생성
+                        explanationText.innerHTML = '<div class="explanation-loading"><div class="spinner"></div>AI 해설 생성 중...</div>';
+                        getAIExplanation(question).then((text) => {
+                            explanationText.innerHTML = mdToHtml(text);
+                            showFollowupUI();
+                        }).catch((err) => {
+                            console.error('AI 해설 실패:', err);
+                            explanationText.innerHTML = '<span style="color:#f44336;">해설을 불러오지 못했습니다.</span><br><button class="retry-btn" onclick="retryExplanation()">🔄 다시 시도</button>';
+                        });
+                    }
                 });
             }
         }
@@ -2450,10 +2458,26 @@ ${ocrText}
                         </div>
                         <div class="wrong-answer-explanation">
                             <div class="explanation-label">💡 해설:</div>
-                            ${explanationCache[wrong.question.image] || wrong.question.explanation || '해설 없음'}
+                            <div class="wrong-exp-content" data-img="${wrong.question.image}">
+                            ${explanationCache[wrong.question.image] || wrong.question.explanation || ''}
+                            </div>
                         </div>
                     `;
                     wrongAnswersList.appendChild(wrongDiv);
+                });
+
+                // 오답 해설 이미지 로드
+                document.querySelectorAll('.wrong-exp-content').forEach(el => {
+                    if (!el.textContent.trim()) {
+                        const imgPath = getExplanationImagePath(el.dataset.img);
+                        checkExplanationImage(imgPath).then(exists => {
+                            if (exists) {
+                                el.innerHTML = explanationImageHtml(imgPath);
+                            } else {
+                                el.textContent = '해설 없음';
+                            }
+                        });
+                    }
                 });
             }
         }
