@@ -1230,7 +1230,7 @@
 
         // 모의고사 문제 DB
         const mockDatabase = [
-            { year: '1회차', subject: 'intro', image: 'questions/mock_1_1_1_01.png', correct: 3, explanation: '용도의 다양성으로 인해 토지는 경제적(용도적) 공급을 할 수 있다. 즉, 개간ㆍ매립ㆍ간척 등을 통하여 토지를 용도변경하여 활용할 수 있다.'},
+            { year: '1회차', subject: 'intro', image: 'questions/mock_1_1_1_01.png', correct: 3, explanation: ''},
             { year: '1회차', subject: 'intro', image: 'questions/mock_1_1_1_02.png', correct: 1, explanation: ''},
             { year: '1회차', subject: 'intro', image: 'questions/mock_1_1_1_03.png', correct: 3, explanation: ''},
             { year: '1회차', subject: 'intro', image: 'questions/mock_1_1_1_04.png', correct: 1, explanation: ''},
@@ -1430,28 +1430,20 @@
                 startDesc.innerHTML = '실전처럼 풀어보는 모의고사입니다.';
                 yearGroup.style.display = 'block';
                 yearLabel.textContent = '📋 모의고사:';
-
-                let options = '<option value="all">전체</option>';
-                const mockItems = [...new Set(mockDatabase.map(q => q.year))].sort();
-                mockItems.forEach(item => {
-                    options += `<option value="${item}">${item}</option>`;
-                });
-                options += '<option value="random">🎲 랜덤 (맞춤형)</option>';
-                document.getElementById('yearSelect').innerHTML = options;
+                document.getElementById('yearSelect').innerHTML = `
+                    <option value="all">전체</option>
+                    <option value="random">🎲 랜덤 (맞춤형)</option>
+                `;
                 document.getElementById('headerSubtitle').textContent = '모의고사';
             } else if (mode === 'practice') {
                 startTitle.textContent = '📚 일반 문제집';
                 startDesc.innerHTML = '주제별 연습문제입니다.';
                 yearGroup.style.display = 'block';
                 yearLabel.textContent = '📋 문제집:';
-
-                let options = '<option value="all">전체</option>';
-                const practiceItems = [...new Set(practiceDatabase.map(q => q.year))].sort();
-                practiceItems.forEach(item => {
-                    options += `<option value="${item}">${item}</option>`;
-                });
-                options += '<option value="random">🎲 랜덤 (맞춤형)</option>';
-                document.getElementById('yearSelect').innerHTML = options;
+                document.getElementById('yearSelect').innerHTML = `
+                    <option value="all">전체</option>
+                    <option value="random">🎲 랜덤 (맞춤형)</option>
+                `;
                 document.getElementById('headerSubtitle').textContent = '일반 문제집';
             } else if (mode === 'all') {
                 startTitle.textContent = '🔥 ALL';
@@ -1567,8 +1559,39 @@
             }
         }
 
-        // 페이지 로드 시 상태 표시
-        document.addEventListener('DOMContentLoaded', updateApiKeyStatus);
+        // 페이지 로드 시 상태 표시 + 해설 JSON 로드
+        document.addEventListener('DOMContentLoaded', () => {
+            updateApiKeyStatus();
+            loadExplanations();
+        });
+
+        // 외부 텍스트 파일에서 해설 로드
+        async function loadExplanations() {
+            try {
+                const res = await fetch('./explanations.txt?' + Date.now());
+                if (!res.ok) return;
+                const text = await res.text();
+                const blocks = text.split(/===(.+?)===/);
+                // blocks: ['', 'questions/xxx.png', '해설내용', 'questions/yyy.png', '해설내용', ...]
+                const data = {};
+                for (let i = 1; i < blocks.length; i += 2) {
+                    const key = blocks[i].trim();
+                    const value = (blocks[i + 1] || '').trim();
+                    if (key && value) data[key] = value;
+                }
+                const allDBs = [questionDatabase, mockDatabase, practiceDatabase];
+                allDBs.forEach(db => {
+                    db.forEach(q => {
+                        if (data[q.image]) {
+                            q.explanation = data[q.image];
+                        }
+                    });
+                });
+                console.log('✅ 해설 로드 완료:', Object.keys(data).length, '개');
+            } catch (e) {
+                console.log('해설 파일 없음 (정상)');
+            }
+        }
 
         function startQuiz() {
             const selectedYear = document.getElementById('yearSelect').value;
@@ -2143,7 +2166,7 @@ ${ocrText}
                 usedModels[cacheKey] = modelName;
                 chatHistories[cacheKey] = [{ role: 'assistant', content: question.explanation || '' }];
             }
-
+            
             // 사용자 메시지 표시
             const chatHistory = document.getElementById('chatHistory');
             const userBubble = document.createElement('div');
